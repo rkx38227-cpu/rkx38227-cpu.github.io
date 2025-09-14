@@ -1,0 +1,10 @@
+{{ define "main" }}
+    <!-- 单页内容专用布局 -->
+    <div class="page-transition p-6">
+        <h1 class="text-3xl font-bold text-dark mb-4">{{ .Title }}</h1>
+        <div class="text-gray-500 text-sm mb-6">{{ .Date.Format "2006-01-02" }}</div>
+        <div class="text-gray-700 leading-relaxed">
+            {{ .Content }} <!-- 渲染Markdown内容 -->
+        </div>
+    </div>
+{{ end }}

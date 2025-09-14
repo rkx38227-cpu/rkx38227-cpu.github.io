@@ -1,0 +1,60 @@
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>{{ if .IsHome }}手机适配应用{{ else }}{{ printf "%s | 手机适配应用" .Title }}{{ end }}</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+<!-- 配置Tailwind自定义颜色和字体 -->
+<script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                colors: {
+                    primary: '#3B82F6',
+                    secondary: '#10B981',
+                    accent: '#F59E0B',
+                    dark: '#1F2937',
+                    light: '#F9FAFB'
+                },
+                fontFamily: {
+                    sans: ['Inter', 'system-ui', 'sans-serif'],
+                },
+            }
+        }
+    }
+</script>
+
+<style type="text/tailwindcss">
+    @layer utilities {
+        .content-auto {
+            content-visibility: auto;
+        }
+        .bg-placeholder {
+            background-color: #E5E7EB;
+            background-image: linear-gradient(45deg, rgba(255,255,255,0.15) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.15) 75%, transparent 75%, transparent);
+            background-size: 20px 20px;
+        }
+        .page-transition {
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+        }
+        .btn-hover {
+            transform: scale(1);
+            transition: transform 200ms;
+        }
+        .btn-hover:hover {
+            transform: scale(1.05);
+        }
+        .btn-container {
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+        .full-screen {
+            height: 100vh;
+            overflow: hidden;
+        }
+        .content-scroll {
+            max-height: calc(100vh - 60px);
+            overflow-y: auto;
+        }
+    }
+</style>

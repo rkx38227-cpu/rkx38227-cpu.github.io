@@ -1,0 +1,152 @@
+{{ define "main" }}
+<div class="app-container relative w-full h-screen overflow-hidden">
+    <!-- 首页 -->
+    <div id="home-page" class="page-transition absolute inset-0 full-screen">
+        <!-- 背景图位置 - 占满整个屏幕 -->
+        <div class="bg-[url('/images/首页.png')] bg-cover bg-center w-full h-full flex flex-col">
+            <!-- 顶部区域 - 灵活占位 -->
+            <div class="flex-1"></div>
+            
+            <!-- 按钮区域 - 悬空在背景图的中下部分 -->
+            <div class="btn-container px-8 pb-16 mb-6">
+                <div class="flex flex-col gap-6">
+                    <button id="to-input-btn" class="btn-hover w-full bg-primary/90 text-white py-4 px-6 rounded-xl text-lg font-medium shadow-lg flex items-center justify-center">
+                        <i class="fa fa-pencil mr-2"></i> 我要投漂流瓶
+                    </button>
+                    <button id="to-view-btn" class="btn-hover w-full bg-secondary/90 text-white py-4 px-6 rounded-xl text-lg font-medium shadow-lg flex items-center justify-center">
+                        <i class="fa fa-list mr-2"></i> 我要捞漂流瓶
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 输入页面 -->
+    <div id="input-page" class="page-transition absolute inset-0 full-screen hidden opacity-0 transform translate-y-4">
+        <!-- 顶部导航 -->
+        <nav class="bg-white shadow-md p-4 flex items-center justify-between">
+            <button id="back-from-input" class="text-dark p-2">
+                <i class="fa fa-arrow-left text-xl"></i>
+            </button>
+            <h1 class="text-xl font-bold text-dark">投漂流瓶</h1>
+            <div class="w-8"></div> <!-- 占位元素，保持标题居中 -->
+        </nav>
+        
+        <!-- 内容滚动区域 -->
+        <div class="content-scroll">
+            <!-- 背景图位置 -->
+            <!-- 方法1: 直接添加背景图片 (推荐) -->
+            <div class="bg-placeholder w-full h-[22vh] flex items-center justify-center mt-2" style="background-image: url('/images/输入.png'); background-size: cover; background-position: center;">
+                <!-- 如需显示覆盖文字，可保留下面的p标签 -->
+                <!-- <p class="text-white text-lg font-bold text-shadow">背景图</p> -->
+            </div>
+            
+            <!-- 输入内容区域 -->
+            <div class="p-6 mt-4">
+                <!-- 类型选择 -->
+                <div class="mb-6">
+                    <p class="text-dark font-medium mb-3">选择类型：</p>
+                    <div class="flex gap-4">
+                        <label class="flex-1">
+                            <input type="radio" name="content-type" value="写给李佳凝" class="hidden peer" checked>
+                            <div class="btn-hover h-12 rounded-lg border-2 border-gray-300 flex items-center justify-center peer-checked:border-primary peer-checked:bg-primary/10 font-medium">
+                                写给李佳凝
+                            </div>
+                        </label>
+                        <label class="flex-1">
+                            <input type="radio" name="content-type" value="写给许若坤" class="hidden peer">
+                            <div class="btn-hover h-12 rounded-lg border-2 border-gray-300 flex items-center justify-center peer-checked:border-accent peer-checked:bg-accent/10 font-medium">
+                                写给许若坤
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- 标题输入 -->
+                <div class="mb-5">
+                    <label for="title-input" class="block text-dark font-medium mb-2">瓶塞上的字</label>
+                    <input type="text" id="title-input" placeholder="请输入标题（可选）" 
+                           class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all">
+                </div>
+                
+                <!-- 正文输入 -->
+                <div class="mb-5">
+                    <label for="content-input" class="block text-dark font-medium mb-2">羊皮纸上的话</label>
+                    <textarea id="content-input" rows="5" placeholder="请输入正文内容" 
+                              class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all resize-none"></textarea>
+                </div>
+                
+                <!-- 图片上传区域 -->
+                <div class="mb-6">
+                    <label class="block text-dark font-medium mb-2">有照片吗</label>
+                    <div class="bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg p-5 text-center">
+                        <i class="fa fa-cloud-upload text-3xl text-gray-400 mb-2"></i>
+                        <p class="text-gray-500 mb-3">点击或拖拽图片到此处上传</p>
+                        <button class="text-primary font-medium">选择图片</button>
+                        <input type="file" accept="image/*" class="hidden" id="image-upload">
+                    </div>
+                </div>
+                
+                <!-- 保存按钮 -->
+                <button id="save-content" class="btn-hover w-full bg-primary text-white py-4 px-6 rounded-xl text-lg font-medium shadow-md flex items-center justify-center">
+                    <i class="fa fa-save mr-2"></i> 塞上瓶塞，投入水中
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 查看页面 -->
+    <div id="view-page" class="page-transition absolute inset-0 full-screen hidden opacity-0 transform translate-y-4">
+        <!-- 顶部导航 -->
+        <nav class="bg-white shadow-md p-4 flex items-center justify-between">
+            <button id="back-from-view" class="text-dark p-2">
+                <i class="fa fa-arrow-left text-xl"></i>
+            </button>
+            <h1 class="text-xl font-bold text-dark">捞起水中的瓶子</h1>
+            <div class="w-8"></div> <!-- 占位元素，保持标题居中 -->
+        </nav>
+        
+        <!-- 内容列表区域 -->
+        <div class="content-scroll">
+            <div id="content-list" class="p-4 space-y-3">
+                <!-- 空状态 -->
+                <div id="empty-state" class="hidden flex flex-col items-center justify-center p-8">
+                    <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                        <i class="fa fa-folder-open-o text-3xl text-gray-400"></i>
+                    </div>
+                    <p class="text-gray-500">暂无内容</p>
+                </div>
+                <!-- 列表项会通过JavaScript动态添加 -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- 详情页面 -->
+    <div id="detail-page" class="page-transition absolute inset-0 full-screen hidden opacity-0 transform translate-y-4">
+        <!-- 顶部导航 -->
+        <nav class="bg-white shadow-md p-4 flex items-center justify-between">
+            <button id="back-from-detail" class="text-dark p-2">
+                <i class="fa fa-arrow-left text-xl"></i>
+            </button>
+            <h1 class="text-xl font-bold text-dark">内容详情</h1>
+            <button id="delete-content" class="text-red-500 p-2">
+                <i class="fa fa-trash text-xl"></i>
+            </button>
+        </nav>
+        
+        <!-- 详情内容区域 -->
+        <div class="content-scroll">
+            <!-- 详情内容 -->
+            <div class="p-6">
+                <!-- 类型徽章 -->
+                <span id="detail-type-badge" class="inline-block px-3 py-1 rounded-full text-sm font-medium mb-4 bg-primary/10 text-primary">写给李佳凝</span>
+                
+                <!-- 标题 -->
+                <h2 id="detail-title" class="text-2xl font-bold text-dark mb-4">无标题</h2>
+                
+                <!-- 正文 -->
+                <p id="detail-content" class="text-gray-700 leading-relaxed">暂无内容</p>
+            </div>
+        </div>
+    </div>
+{{ end }}

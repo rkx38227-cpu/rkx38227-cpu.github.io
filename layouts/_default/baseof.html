@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  {{ partial "head.html" . }}
+</head>
+<body class="bg-light font-sans overflow-x-hidden">
+  <!-- 页面容器 -->
+  <div class="relative w-full">
+    {{ block "main" . }}{{ end }}
+  </div>
+
+  <!-- 应用交互脚本 -->
+  {{ partial "app-script.html" . }}
+</body>
+</html>

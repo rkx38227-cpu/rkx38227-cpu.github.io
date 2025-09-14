@@ -1,0 +1,207 @@
+<!-- 存储内容的数组，使用localStorage持久化 -->
+<script>
+    let contents = JSON.parse(localStorage.getItem('appContents')) || [];
+    let currentDetailIndex = -1;
+    
+    // DOM元素
+    const homePage = document.getElementById('home-page');
+    const inputPage = document.getElementById('input-page');
+    const viewPage = document.getElementById('view-page');
+    const detailPage = document.getElementById('detail-page');
+    const emptyState = document.getElementById('empty-state');
+    const contentList = document.getElementById('content-list');
+    const imageUploadBtn = document.querySelector('.bg-gray-100 button');
+    const imageUploadInput = document.getElementById('image-upload');
+    
+    // 页面切换函数
+    function showPage(pageId) {
+        // 隐藏所有页面
+        [homePage, inputPage, viewPage, detailPage].forEach(page => {
+            page.classList.add('hidden', 'opacity-0', 'transform', 'translate-y-4');
+        });
+        
+        // 显示目标页面
+        const targetPage = document.getElementById(pageId);
+        targetPage.classList.remove('hidden');
+        // 触发重排后添加动画
+        setTimeout(() => {
+            targetPage.classList.remove('opacity-0', 'translate-y-4');
+        }, 10);
+        
+        // 如果显示的是查看页面，刷新列表
+        if (pageId === 'view-page') {
+            renderContentList();
+        }
+    }
+    
+    // 渲染内容列表
+    function renderContentList() {
+        // 清空现有列表（除了空状态）
+        while (contentList.children.length > 1) {
+            contentList.removeChild(contentList.lastChild);
+        }
+        
+        // 检查是否有内容
+        if (contents.length === 0) {
+            emptyState.classList.remove('hidden');
+            return;
+        }
+        
+        // 隐藏空状态
+        emptyState.classList.add('hidden');
+        
+        // 倒序显示（最新的在前面）
+        const reversedContents = [...contents].reverse();
+        
+        // 添加列表项
+        reversedContents.forEach((content, index) => {
+            const originalIndex = contents.length - 1 - index;
+            const listItem = document.createElement('div');
+            
+            // 根据类型设置不同的样式
+            let typeClass, typeText;
+            if (content.type === '写给李佳凝') {
+                typeClass = 'border-l-4 border-primary';
+                typeText = '写给李佳凝';
+            } else if (content.type === '写给许若坤') {
+                typeClass = 'border-l-4 border-accent';
+                typeText = '写给许若坤';
+            } else {
+                typeClass = 'border-l-4 border-gray-300';
+                typeText = '其他类型';
+            }
+            
+            listItem.className = `bg-white rounded-r-lg shadow-sm p-4 ${typeClass} hover:shadow-md transition-shadow cursor-pointer`;
+            listItem.innerHTML = `
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h3 class="font-medium text-dark ${!content.title ? 'text-gray-400' : ''}">
+                            ${content.title || '无标题'}
+                        </h3>
+                        <p class="text-xs text-gray-500 mt-1">${typeText} · ${formatDate(content.timestamp)}</p>
+                    </div>
+                    <i class="fa fa-chevron-right text-gray-400"></i>
+                </div>
+                <p class="text-gray-600 text-sm mt-2 line-clamp-2">${content.content.substring(0, 50)}${content.content.length > 50 ? '...' : ''}</p>
+            `;
+            
+            // 点击查看详情
+            listItem.addEventListener('click', () => {
+                showDetail(originalIndex);
+            });
+            
+            contentList.appendChild(listItem);
+        });
+    }
+    
+    // 显示详情
+    function showDetail(index) {
+        currentDetailIndex = index;
+        const content = contents[index];
+        
+        // 设置详情内容
+        document.getElementById('detail-title').textContent = content.title || '无标题';
+        document.getElementById('detail-content').textContent = content.content;
+        
+        // 设置类型徽章
+        const typeBadge = document.getElementById('detail-type-badge');
+        if (content.type === '写给李佳凝') {
+            typeBadge.textContent = '写给李佳凝';
+            typeBadge.className = 'inline-block px-3 py-1 rounded-full text-sm font-medium mb-4 bg-primary/10 text-primary';
+        } else if (content.type === '写给许若坤') {
+            typeBadge.textContent = '写给许若坤';
+            typeBadge.className = 'inline-block px-3 py-1 rounded-full text-sm font-medium mb-4 bg-accent/10 text-accent';
+        } else {
+            typeBadge.textContent = '其他类型';
+            typeBadge.className = 'inline-block px-3 py-1 rounded-full text-sm font-medium mb-4 bg-gray-100 text-gray-600';
+        }
+        
+        // 显示详情页
+        showPage('detail-page');
+    }
+    
+    // 保存内容
+    function saveContent() {
+        const type = document.querySelector('input[name="content-type"]:checked').value;
+        const title = document.getElementById('title-input').value.trim();
+        const content = document.getElementById('content-input').value.trim();
+        
+        // 简单验证
+        if (!content) {
+            alert('请输入正文内容');
+            return;
+        }
+        
+        // 创建新内容对象
+        const newContent = {
+            id: Date.now(),
+            type,
+            title,
+            content,
+            timestamp: new Date().toISOString()
+        };
+        
+        // 添加到数组并保存到localStorage
+        contents.push(newContent);
+        localStorage.setItem('appContents', JSON.stringify(contents));
+        
+        // 重置表单
+        document.getElementById('title-input').value = '';
+        document.getElementById('content-input').value = '';
+        
+        // 显示提示并返回首页
+        alert('内容保存成功！');
+        showPage('home-page');
+    }
+    
+    // 删除内容
+    function deleteContent() {
+        if (currentDetailIndex === -1) return;
+        
+        if (confirm('确定要删除这条内容吗？')) {
+            // 从数组中移除
+            contents.splice(currentDetailIndex, 1);
+            // 保存到localStorage
+            localStorage.setItem('appContents', JSON.stringify(contents));
+            // 返回列表页
+            showPage('view-page');
+            currentDetailIndex = -1;
+        }
+    }
+    
+    // 格式化日期
+    function formatDate(isoString) {
+        const date = new Date(isoString);
+        return `${date.getMonth() + 1}月${date.getDate()}日 ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+    }
+    
+    // 事件监听
+    document.addEventListener('DOMContentLoaded', () => {
+        // 首页按钮
+        document.getElementById('to-input-btn').addEventListener('click', () => showPage('input-page'));
+        document.getElementById('to-view-btn').addEventListener('click', () => showPage('view-page'));
+        
+        // 返回按钮
+        document.getElementById('back-from-input').addEventListener('click', () => showPage('home-page'));
+        document.getElementById('back-from-view').addEventListener('click', () => showPage('home-page'));
+        document.getElementById('back-from-detail').addEventListener('click', () => showPage('view-page'));
+        
+        // 保存按钮
+        document.getElementById('save-content').addEventListener('click', saveContent);
+        
+        // 删除按钮
+        document.getElementById('delete-content').addEventListener('click', deleteContent);
+        
+        // 图片上传触发
+        imageUploadBtn.addEventListener('click', () => {
+            imageUploadInput.click();
+        });
+        
+        // 图片选择后
+        imageUploadInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                alert('图片已选择（实际项目中会处理上传）');
+            }
+        });
+    });
+</script>
