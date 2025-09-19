@@ -75,9 +75,10 @@
                     <textarea id="content-input" rows="5" placeholder="请输入正文内容" 
                               class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all resize-none"></textarea>
                 </div>
-                
+           
                 <!-- 图片上传区域 -->
-                <div class="mb-6">
+                <!-- 已注释的图片上传区域 -->
+                <!-- <div class="mb-6">
                     <label class="block text-dark font-medium mb-2">有照片吗</label>
                     <div class="bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg p-5 text-center">
                         <i class="fa fa-cloud-upload text-3xl text-gray-400 mb-2"></i>
@@ -85,6 +86,19 @@
                         <button class="text-primary font-medium">选择图片</button>
                         <input type="file" accept="image/*" class="hidden" id="image-upload">
                     </div>
+                </div> -->
+        
+                <!-- 图片上传区域 -->
+                <div class="mb-6">
+                    <label class="block text-dark font-medium mb-2">有照片吗</label>
+                    <div class="bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg p-5 text-center">
+                         <i class="fa fa-cloud-upload text-3xl text-gray-400 mb-2"></i>
+                         <p class="text-gray-500 mb-3">点击或拖拽图片到此处上传</p>
+                         <button class="text-primary font-medium">选择图片</button>
+                         <input type="file" accept="image/*" class="hidden" id="image-upload">
+                     <!-- 新增图片预览容器 -->
+                     <div id="image-preview" class="mt-4 hidden"></div>
+                     </div>
                 </div>
                 
                 <!-- 保存按钮 -->
@@ -102,7 +116,7 @@
             <button id="back-from-view" class="text-dark p-2">
                 <i class="fa fa-arrow-left text-xl"></i>
             </button>
-            <h1 class="text-xl font-bold text-dark">捞起水中的瓶子</h1>
+            <h1 class="text-xl font-bold text-dark">跨越时空的问候</h1>
             <div class="w-8"></div> <!-- 占位元素，保持标题居中 -->
         </nav>
         

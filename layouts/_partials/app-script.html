@@ -132,27 +132,68 @@
             return;
         }
         
-        // 创建新内容对象
+        // 获取选中的图片文件
+        const imageFile = imageUploadInput.files[0];
+        
+        // 创建新内容对象（包含图片信息）
         const newContent = {
             id: Date.now(),
             type,
             title,
             content,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
+            image: imageFile ? imageFile.name : null // 仅保存文件名，实际项目可能需要保存URL
         };
         
-        // 添加到数组并保存到localStorage
-        contents.push(newContent);
-        localStorage.setItem('appContents', JSON.stringify(contents));
-        
-        // 重置表单
-        document.getElementById('title-input').value = '';
-        document.getElementById('content-input').value = '';
-        
-        // 显示提示并返回首页
-        alert('内容保存成功！');
-        showPage('home-page');
+        // 如果有图片，这里可以添加AJAX上传逻辑
+        if (imageFile) {
+            const formData = new FormData();
+            formData.append('image', imageFile);
+            
+            // 示例：使用fetch上传
+            /*
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            }).then(response => response.json())
+              .then(data => {
+                  // 上传成功后保存图片URL
+                  newContent.imageUrl = data.url;
+                  // 然后保存内容
+                  contents.push(newContent);
+                  localStorage.setItem('appContents', JSON.stringify(contents));
+                  resetForm();
+                  alert('内容保存成功！');
+                  showPage('home-page');
+              });
+            */
+            
+            // 由于fetch上传被注释，暂时直接保存带图片信息的内容
+            contents.push(newContent);
+            localStorage.setItem('appContents', JSON.stringify(contents));
+            resetForm();
+            alert('内容保存成功！');
+            showPage('home-page');
+        } else {
+            // 没有图片时直接保存
+            contents.push(newContent);
+            localStorage.setItem('appContents', JSON.stringify(contents));
+            // 重置表单和预览
+            resetForm();
+            alert('内容保存成功！');
+            showPage('home-page');
+        }
     }
+
+// 新增重置表单函数
+function resetForm() {
+    document.getElementById('title-input').value = '';
+    document.getElementById('content-input').value = '';
+    imageUploadInput.value = '';
+    document.getElementById('image-preview').innerHTML = '';
+    document.getElementById('image-preview').classList.add('hidden');
+}
+
     
     // 删除内容
     function deleteContent() {
@@ -193,14 +234,43 @@
         document.getElementById('delete-content').addEventListener('click', deleteContent);
         
         // 图片上传触发
+        /* 已注释的图片上传相关代码
         imageUploadBtn.addEventListener('click', () => {
             imageUploadInput.click();
         });
         
-        // 图片选择后
         imageUploadInput.addEventListener('change', (e) => {
             if (e.target.files.length > 0) {
                 alert('图片已选择（实际项目中会处理上传）');
+            }
+        });
+        */
+        imageUploadInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                const file = e.target.files[0];
+                const previewContainer = document.getElementById('image-preview');
+                
+                // 检查是否为图片文件
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        // 创建预览图片元素
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.className = 'max-w-full h-48 object-contain rounded-md';
+                        
+                        // 清空预览容器并添加新图片
+                        previewContainer.innerHTML = '';
+                        previewContainer.appendChild(img);
+                        previewContainer.classList.remove('hidden');
+                    }
+                    
+                    // 读取图片文件
+                    reader.readAsDataURL(file);
+                } else {
+                    alert('请选择图片文件');
+                }
             }
         });
     });

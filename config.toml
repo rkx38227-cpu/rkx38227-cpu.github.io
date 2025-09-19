@@ -1,4 +1,4 @@
 baseURL = "https://your-site.com"
 languageCode = "zh-CN"
-title = "我的手机应用"
+title = "漂流瓶"
 theme = ""  # 不使用主题，使用自定义模板
