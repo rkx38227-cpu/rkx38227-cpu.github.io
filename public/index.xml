@@ -2,17 +2,17 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>My New Hugo Site</title>
-    <link>http://localhost:3470/</link>
+    <link>https://example.org/</link>
     <description>Recent content on My New Hugo Site</description>
     <generator>Hugo</generator>
     <language>en-us</language>
     <lastBuildDate>Sun, 14 Sep 2025 00:00:00 +0800</lastBuildDate>
-    <atom:link href="http://localhost:3470/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="https://example.org/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>手机适配应用</title>
-      <link>http://localhost:3470/mobile-app/</link>
+      <title>我们的漂流瓶</title>
+      <link>https://example.org/mobile-app/</link>
       <pubDate>Sun, 14 Sep 2025 00:00:00 +0800</pubDate>
-      <guid>http://localhost:3470/mobile-app/</guid>
+      <guid>https://example.org/mobile-app/</guid>
       <description></description>
     </item>
   </channel>

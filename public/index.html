@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-	<meta name="generator" content="Hugo 0.150.0"><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=3470&amp;path=livereload" data-no-instant defer></script>
+	<meta name="generator" content="Hugo 0.150.0">
   <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>手机适配应用</title>
+<title>我们的漂流瓶</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
 
@@ -143,16 +143,22 @@
                     <textarea id="content-input" rows="5" placeholder="请输入正文内容" 
                               class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all resize-none"></textarea>
                 </div>
+           
                 
+                
+                
+        
                 
                 <div class="mb-6">
                     <label class="block text-dark font-medium mb-2">有照片吗</label>
                     <div class="bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg p-5 text-center">
-                        <i class="fa fa-cloud-upload text-3xl text-gray-400 mb-2"></i>
-                        <p class="text-gray-500 mb-3">点击或拖拽图片到此处上传</p>
-                        <button class="text-primary font-medium">选择图片</button>
-                        <input type="file" accept="image/*" class="hidden" id="image-upload">
-                    </div>
+                         <i class="fa fa-cloud-upload text-3xl text-gray-400 mb-2"></i>
+                         <p class="text-gray-500 mb-3">点击或拖拽图片到此处上传</p>
+                         <button class="text-primary font-medium">选择图片</button>
+                         <input type="file" accept="image/*" class="hidden" id="image-upload">
+                     
+                     <div id="image-preview" class="mt-4 hidden"></div>
+                     </div>
                 </div>
                 
                 
@@ -170,7 +176,7 @@
             <button id="back-from-view" class="text-dark p-2">
                 <i class="fa fa-arrow-left text-xl"></i>
             </button>
-            <h1 class="text-xl font-bold text-dark">捞起水中的瓶子</h1>
+            <h1 class="text-xl font-bold text-dark">跨越时空的问候</h1>
             <div class="w-8"></div> 
         </nav>
         
@@ -356,26 +362,53 @@
         }
         
         
+        const imageFile = imageUploadInput.files[0];
+        
+        
         const newContent = {
             id: Date.now(),
             type,
             title,
             content,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
+            image: imageFile ? imageFile.name : null 
         };
         
         
-        contents.push(newContent);
-        localStorage.setItem('appContents', JSON.stringify(contents));
-        
-        
-        document.getElementById('title-input').value = '';
-        document.getElementById('content-input').value = '';
-        
-        
-        alert('内容保存成功！');
-        showPage('home-page');
+        if (imageFile) {
+            const formData = new FormData();
+            formData.append('image', imageFile);
+            
+            
+            
+
+            
+            
+            contents.push(newContent);
+            localStorage.setItem('appContents', JSON.stringify(contents));
+            resetForm();
+            alert('内容保存成功！');
+            showPage('home-page');
+        } else {
+            
+            contents.push(newContent);
+            localStorage.setItem('appContents', JSON.stringify(contents));
+            
+            resetForm();
+            alert('内容保存成功！');
+            showPage('home-page');
+        }
     }
+
+
+function resetForm() {
+    document.getElementById('title-input').value = '';
+    document.getElementById('content-input').value = '';
+    imageUploadInput.value = '';
+    document.getElementById('image-preview').innerHTML = '';
+    document.getElementById('image-preview').classList.add('hidden');
+}
+
     
     
     function deleteContent() {
@@ -416,14 +449,34 @@
         document.getElementById('delete-content').addEventListener('click', deleteContent);
         
         
-        imageUploadBtn.addEventListener('click', () => {
-            imageUploadInput.click();
-        });
         
-        
+
         imageUploadInput.addEventListener('change', (e) => {
             if (e.target.files.length > 0) {
-                alert('图片已选择（实际项目中会处理上传）');
+                const file = e.target.files[0];
+                const previewContainer = document.getElementById('image-preview');
+                
+                
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.className = 'max-w-full h-48 object-contain rounded-md';
+                        
+                        
+                        previewContainer.innerHTML = '';
+                        previewContainer.appendChild(img);
+                        previewContainer.classList.remove('hidden');
+                    }
+                    
+                    
+                    reader.readAsDataURL(file);
+                } else {
+                    alert('请选择图片文件');
+                }
             }
         });
     });
