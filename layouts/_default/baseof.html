@@ -9,30 +9,6 @@
     {{ block "main" . }}{{ end }}
   </div>
 
-  <!-- 令牌输入模态框 -->
-  <div id="token-modal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
-    <div class="bg-white rounded-xl p-6 w-11/12 max-w-md shadow-2xl">
-      <h3 class="text-xl font-bold text-dark mb-4">请输入访问令牌</h3>
-      <p class="text-gray-500 text-sm mb-4">令牌仅在当前会话中生效，刷新页面后需重新输入</p>
-      
-      <div class="mb-5">
-        <label for="user-token" class="block text-dark font-medium mb-2">GitHub 访问令牌</label>
-        <!-- 用 type="password" 隐藏输入内容 -->
-        <input type="password" id="user-token" placeholder="ghp_xxxx..." 
-               class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all">
-      </div>
-      
-      <div class="flex gap-3">
-        <button id="cancel-token" class="flex-1 py-3 px-4 border border-gray-300 rounded-lg font-medium hover:bg-gray-50 transition-colors">
-          取消
-        </button>
-        <button id="confirm-token" class="flex-1 py-3 px-4 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-colors">
-          确认
-        </button>
-      </div>
-    </div>
-  </div>
-
   <!-- 应用交互脚本 -->
   {{ partial "app-script.html" . }}
 </body>
