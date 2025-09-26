@@ -411,6 +411,50 @@
             throw error;
         }
     }
+
+    
+    async function fetchExistingData(token) {
+        try {
+            const response = await fetch(`https://api.github.com/repos/${githubConfig.username}/${githubConfig.repo}/contents/${githubConfig.dataFile}`, {
+                headers: {
+                    Authorization: `token ${token}`,
+                    Accept: "application/vnd.github.v3+json"
+                }
+            });
+
+            if (response.status === 404) {
+                
+                return { data: [], sha: null };
+            }
+
+            if (!response.ok) {
+                throw new Error("读取历史数据失败");
+            }
+
+            const data = await response.json();
+            
+            const decodedContent = atob(data.content);
+            return { data: JSON.parse(decodedContent), sha: data.sha };
+        } catch (error) {
+            console.error("读取历史数据出错：", error);
+            throw error;
+        }
+    }
+
+    
+    async function loadDataFromGitHub() {
+        const token = prompt("请输入GitHub令牌以加载内容：");
+        if (!token) return;
+
+        try {
+            const result = await fetchExistingData(token);
+            contents = result.data;
+            renderContentList(); 
+        } catch (error) {
+            console.error("加载数据失败：", error);
+            alert("加载数据失败：" + error.message);
+        }
+    }
     
     
     async function saveContent() {
@@ -431,43 +475,64 @@
             title,
             content,
             timestamp: new Date().toISOString(),
-            image: imageFile ? imageFile.name : null  
+            image: null  
         };
-         
-        if (imageFile) {
+
+        
+        const token = window.tempUploadToken || prompt("请输入GitHub令牌以保存内容：");
+        if (!token) {
+            alert("未获取到令牌，无法保存内容");
+            return;
+        }
+
+        try {
             
-            const token = window.tempUploadToken;
-            if (!token) {
-                alert('未获取到上传令牌，请重新选择图片并输入令牌');
-                return;
-            }
-             
-            try {
+            if (imageFile) {
                 
                 const imageUrl = await uploadImageToGitHub(imageFile, token);
-                
-                
                 newContent.image = imageUrl;
-                
-                
-                contents.push(newContent);
-                
-                
-                resetForm();
-                alert('内容和图片保存成功！');
-                showPage('home-page');
-            } catch (error) {
-                alert('图片上传失败：' + error.message);
-            } finally {
-                
-                delete window.tempUploadToken;
             }
-        } else {
+
             
-            contents.push(newContent);
+            const result = await fetchExistingData(token);
+            const existingData = result.data;
+            
+            const updatedData = [...existingData, newContent];
+            
+            const jsonData = JSON.stringify(updatedData, null, 2);
+            const base64Data = btoa(unescape(encodeURIComponent(jsonData)));
+
+            
+            const response = await fetch(`https://api.github.com/repos/${githubConfig.username}/${githubConfig.repo}/contents/${githubConfig.dataFile}`, {
+                method: "PUT",
+                headers: {
+                    Authorization: `token ${token}`,
+                    Accept: "application/vnd.github.v3+json"
+                },
+                body: JSON.stringify({
+                    message: `Add new content: ${title || "无标题"}`, 
+                    content: base64Data, 
+                    branch: githubConfig.branch,
+                    
+                    sha: result.sha
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error("内容保存到GitHub失败");
+            }
+
+            
+            contents = updatedData;
             resetForm();
-            alert('内容保存成功！');
+            alert("内容已成功保存到GitHub！");
             showPage('home-page');
+        } catch (error) {
+            console.error("保存失败：", error);
+            alert("保存失败：" + error.message);
+        } finally {
+            
+            delete window.tempUploadToken;
         }
     }
 
@@ -503,6 +568,9 @@ function resetForm() {
 
     
     document.addEventListener('DOMContentLoaded', async () => {
+        
+        loadDataFromGitHub();
+
         
         document.getElementById('to-input-btn').addEventListener('click', () => showPage('input-page'));
         document.getElementById('to-view-btn').addEventListener('click', () => showPage('view-page'));
@@ -542,7 +610,7 @@ function resetForm() {
                     reader.readAsDataURL(file);
                     
                     
-                    const token = prompt('请输入图片上传令牌：');
+                    const token = prompt('请输入GitHub令牌：');
                     if (!token) {
                         alert('令牌为空，无法上传图片');
                         
