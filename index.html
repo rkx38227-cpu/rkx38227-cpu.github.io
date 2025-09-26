@@ -249,7 +249,7 @@
       repo: "rkx38227-cpu.github.io",
       branch: "main", 
       dataFile: "data.json", 
-      imageDir: "static/images/user-uploads/", 
+      imageDir: "images/user-uploads/", 
       
       baseUrl: "https://rkx38227-cpu.github.io/"
     };
@@ -391,7 +391,10 @@
         try {
             
             const fileName = `${Date.now()}-${file.name.replace(/\s+/g, "-")}`;
-            const filePath = `${githubConfig.imageDir}${fileName}`;
+            
+            const repoFilePath = `static/${githubConfig.imageDir}${fileName}`;
+            
+            const displayFilePath = `${githubConfig.imageDir}${fileName}`;
               
             
             const base64Image = await new Promise((resolve) => {
@@ -401,7 +404,7 @@
             });
               
             
-            const response = await fetch(`https://api.github.com/repos/${githubConfig.username}/${githubConfig.repo}/contents/${filePath}`, {
+            const response = await fetch(`https://api.github.com/repos/${githubConfig.username}/${githubConfig.repo}/contents/${repoFilePath}`, {
                 method: "PUT",
                 headers: {
                     Authorization: `token ${token}`,
@@ -429,8 +432,8 @@
             
             const baseUrlWithSlash = githubConfig.baseUrl.endsWith('/') ? githubConfig.baseUrl : githubConfig.baseUrl + '/';
             
-            const imageDirWithoutLeadingSlash = githubConfig.imageDir.startsWith('/') ? githubConfig.imageDir.substring(1) : githubConfig.imageDir;
-            return `${baseUrlWithSlash}${imageDirWithoutLeadingSlash}${fileName}`;
+            const imageDirWithoutLeadingSlash = displayFilePath.startsWith('/') ? displayFilePath.substring(1) : displayFilePath;
+            return `${baseUrlWithSlash}${imageDirWithoutLeadingSlash}`;
         } catch (error) {
             console.error("图片上传失败：", error);
             throw error;
