@@ -20,7 +20,7 @@
       repo: "rkx38227-cpu.github.io",
       branch: "main", // 或 master
       dataFile: "data.json", // 存储内容数据的文件
-      imageDir: "static/images/user-uploads/", // 图片存储目录
+      imageDir: "images/user-uploads/", // 图片存储目录（已移除static前缀）
       // 添加部署基础路径
       baseUrl: "https://rkx38227-cpu.github.io/"
     };
@@ -162,7 +162,10 @@
         try {
             // 生成唯一文件名（避免重复）
             const fileName = `${Date.now()}-${file.name.replace(/\s+/g, "-")}`;
-            const filePath = `${githubConfig.imageDir}${fileName}`;
+            // GitHub仓库中实际的文件路径（包含static前缀）
+            const repoFilePath = `static/${githubConfig.imageDir}${fileName}`;
+            // 前端显示的图片路径（不包含static前缀）
+            const displayFilePath = `${githubConfig.imageDir}${fileName}`;
               
             // 读取图片并转为base64
             const base64Image = await new Promise((resolve) => {
@@ -172,7 +175,7 @@
             });
               
             // 调用GitHub API创建图片文件
-            const response = await fetch(`https://api.github.com/repos/${githubConfig.username}/${githubConfig.repo}/contents/${filePath}`, {
+            const response = await fetch(`https://api.github.com/repos/${githubConfig.username}/${githubConfig.repo}/contents/${repoFilePath}`, {
                 method: "PUT",
                 headers: {
                     Authorization: `token ${token}`,
@@ -200,8 +203,8 @@
             // 确保baseUrl末尾有斜杠，避免重复域名
             const baseUrlWithSlash = githubConfig.baseUrl.endsWith('/') ? githubConfig.baseUrl : githubConfig.baseUrl + '/';
             // 确保imageDir不以斜杠开头，避免重复斜杠
-            const imageDirWithoutLeadingSlash = githubConfig.imageDir.startsWith('/') ? githubConfig.imageDir.substring(1) : githubConfig.imageDir;
-            return `${baseUrlWithSlash}${imageDirWithoutLeadingSlash}${fileName}`;
+            const imageDirWithoutLeadingSlash = displayFilePath.startsWith('/') ? displayFilePath.substring(1) : displayFilePath;
+            return `${baseUrlWithSlash}${imageDirWithoutLeadingSlash}`;
         } catch (error) {
             console.error("图片上传失败：", error);
             throw error;
