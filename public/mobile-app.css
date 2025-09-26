@@ -1,3 +1,33 @@
 
-/* 样式已统一移至 layouts/_partials/head.html 中管理 */
-/* 请在 head.html 中修改自定义工具类，避免样式冲突 */
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .bg-placeholder {
+                background-color: #E5E7EB;
+                background-image: linear-gradient(45deg, rgba(255,255,255,0.15) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.15) 75%, transparent 75%, transparent);
+                background-size: 20px 20px;
+            }
+            .page-transition {
+                transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+            }
+            .btn-hover {
+                transform: scale(1);
+                transition: transform 200ms;
+            }
+            .btn-hover:hover {
+                transform: scale(1.05);
+            }
+            .btn-container {
+                backdrop-filter: blur(8px);
+                -webkit-backdrop-filter: blur(8px);
+            }
+            .full-screen {
+                height: 100vh;
+                overflow: hidden;
+            }
+            .content-scroll {
+                max-height: calc(100vh - 60px);
+                overflow-y: auto;
+            }
+        }

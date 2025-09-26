@@ -1,303 +1,506 @@
-<script src="/js/common.js"></script>
 <script>
-  // 等待DOM加载完成
-  document.addEventListener('DOMContentLoaded', async () => {
-    // 从common.js导入函数和配置
-    const { 
-      githubConfig, 
-      saveToken, 
-      getToken, 
-      getDomElements, 
-      cache, 
-      handleError, 
-      formatDate, 
-      showPage, 
-      fetchExistingData, 
-      uploadImageToGitHub,
-      renderContentList,
-      loadDataFromGitHub
-    } = window.common || await import('/js/common.js');
+    // 保存令牌到sessionStorage
+    function saveToken(token) {
+      sessionStorage.setItem('githubToken', token);
+    }
+    
+    // 从sessionStorage获取令牌
+    function getToken() {
+      return sessionStorage.getItem('githubToken');
+    }
+    
+    // 清除sessionStorage中的令牌
+    function clearToken() {
+      sessionStorage.removeItem('githubToken');
+    }
+    
+    // GitHub配置（替换为你的信息）
+    const githubConfig = {
+      username: "rkx38227-cpu",
+      repo: "rkx38227-cpu.github.io",
+      branch: "main", // 或 master
+      dataFile: "data.json", // 存储内容数据的文件
+      imageDir: "static/images/user-uploads/", // 图片存储目录
+      // 添加部署基础路径
+      baseUrl: "https://rkx38227-cpu.github.io/rkx38227-cpu.github.io/"
+    };
 
     let contents = []; // 全局内容数组
     let currentDetailIndex = -1;
-    const dom = getDomElements(); // 统一获取DOM元素
-
-    // 页面加载时读取GitHub中的数据
-    async function loadDataFromApp() {
-      try {
-        const data = await loadDataFromGitHub(
-          dom, 
-          cache, 
-          fetchExistingData, 
-          handleError, 
-          saveToken, 
-          getToken, 
-          githubConfig
-        );
-        contents = data;
-        renderContentList(contents, dom, formatDate, showDetail);
-      } catch (error) {
-        handleError(error, "加载数据");
-      }
+    
+    // DOM元素
+    const homePage = document.getElementById('home-page');
+    const inputPage = document.getElementById('input-page');
+    const viewPage = document.getElementById('view-page');
+    const detailPage = document.getElementById('detail-page');
+    const emptyState = document.getElementById('empty-state');
+    const contentList = document.getElementById('content-list');
+    const imageUploadBtn = document.querySelector('.bg-gray-100 button');
+    const imageUploadInput = document.getElementById('image-upload');
+    
+    // 页面切换函数
+    function showPage(pageId) {
+        // 隐藏所有页面
+        [homePage, inputPage, viewPage, detailPage].forEach(page => {
+            page.classList.add('hidden', 'opacity-0', 'transform', 'translate-y-4');
+        });
+        
+        // 显示目标页面
+        const targetPage = document.getElementById(pageId);
+        targetPage.classList.remove('hidden');
+        // 触发重排后添加动画
+        setTimeout(() => {
+            targetPage.classList.remove('opacity-0', 'translate-y-4');
+        }, 10);
+        
+        // 如果显示的是查看页面，刷新列表
+        if (pageId === 'view-page') {
+            renderContentList();
+        }
     }
-
+    
+    // 渲染内容列表
+    function renderContentList() {
+        // 清空现有列表（除了空状态）
+        while (contentList.children.length > 1) {
+            contentList.removeChild(contentList.lastChild);
+        }
+        
+        // 检查是否有内容
+        if (contents.length === 0) {
+            emptyState.classList.remove('hidden');
+            return;
+        }
+        
+        // 隐藏空状态
+        emptyState.classList.add('hidden');
+        
+        // 倒序显示（最新的在前面）
+        const reversedContents = [...contents].reverse();
+        
+        // 添加列表项
+        reversedContents.forEach((content, index) => {
+            const originalIndex = contents.length - 1 - index;
+            const listItem = document.createElement('div');
+            
+            // 根据类型设置不同的样式
+            let typeClass, typeText;
+            if (content.type === '写给李佳凝') {
+                typeClass = 'border-l-4 border-primary';
+                typeText = '写给李佳凝';
+            } else if (content.type === '写给许若坤') {
+                typeClass = 'border-l-4 border-accent';
+                typeText = '写给许若坤';
+            } else {
+                typeClass = 'border-l-4 border-gray-300';
+                typeText = '其他类型';
+            }
+            
+            listItem.className = `bg-white rounded-r-lg shadow-sm p-4 ${typeClass} hover:shadow-md transition-shadow cursor-pointer`;
+            listItem.innerHTML = `
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h3 class="font-medium text-dark ${!content.title ? 'text-gray-400' : ''}">
+                            ${content.title || '无标题'}
+                        </h3>
+                        <p class="text-xs text-gray-500 mt-1">${typeText} · ${formatDate(content.timestamp)}</p>
+                    </div>
+                    <i class="fa fa-chevron-right text-gray-400"></i>
+                </div>
+                <p class="text-gray-600 text-sm mt-2 line-clamp-2">${content.content.substring(0, 50)}${content.content.length > 50 ? '...' : ''}</p>
+            `;
+            
+            // 点击查看详情
+            listItem.addEventListener('click', () => {
+                showDetail(originalIndex);
+            });
+            
+            contentList.appendChild(listItem);
+        });
+    }
+    
     // 显示详情
     function showDetail(index) {
-      currentDetailIndex = index;
-      const content = contents[index];
-      
-      // 设置详情内容
-      dom.content.detailTitle.textContent = content.title || '无标题';
-      dom.content.detailContent.textContent = content.content;
-      
-      // 设置类型徽章
-      if (content.type === '写给李佳凝') {
-        dom.content.detailTypeBadge.textContent = '写给李佳凝';
-        dom.content.detailTypeBadge.className = 'inline-block px-3 py-1 rounded-full text-sm font-medium mb-4 bg-primary/10 text-primary';
-      } else if (content.type === '写给许若坤') {
-        dom.content.detailTypeBadge.textContent = '写给许若坤';
-        dom.content.detailTypeBadge.className = 'inline-block px-3 py-1 rounded-full text-sm font-medium mb-4 bg-accent/10 text-accent';
-      } else {
-        dom.content.detailTypeBadge.textContent = '其他类型';
-        dom.content.detailTypeBadge.className = 'inline-block px-3 py-1 rounded-full text-sm font-medium mb-4 bg-gray-100 text-gray-600';
-      }
-      
-      // 新增：展示图片
-      const detailContainer = document.querySelector('#detail-page .content-scroll > div');
-      const existingImg = detailContainer.querySelector('.detail-image');
-      if (existingImg) existingImg.remove();
+        currentDetailIndex = index;
+        const content = contents[index];
         
-      if (content.image) {
-        const imgContainer = document.createElement('div');
-        imgContainer.className = 'detail-image my-4';
-        imgContainer.innerHTML = `<img src="${content.image}" class="max-w-full h-auto rounded-lg shadow-sm" onerror="this.src='/images/placeholder.svg'; this.classList.add('opacity-50')" alt="内容图片">`;
-        detailContainer.insertBefore(imgContainer, dom.content.detailContent);
-      }
-      
-      // 显示详情页
-      showPage('detail', dom);
+        // 设置详情内容
+        document.getElementById('detail-title').textContent = content.title || '无标题';
+        document.getElementById('detail-content').textContent = content.content;
+        
+        // 设置类型徽章
+        const typeBadge = document.getElementById('detail-type-badge');
+        if (content.type === '写给李佳凝') {
+            typeBadge.textContent = '写给李佳凝';
+            typeBadge.className = 'inline-block px-3 py-1 rounded-full text-sm font-medium mb-4 bg-primary/10 text-primary';
+        } else if (content.type === '写给许若坤') {
+            typeBadge.textContent = '写给许若坤';
+            typeBadge.className = 'inline-block px-3 py-1 rounded-full text-sm font-medium mb-4 bg-accent/10 text-accent';
+        } else {
+            typeBadge.textContent = '其他类型';
+            typeBadge.className = 'inline-block px-3 py-1 rounded-full text-sm font-medium mb-4 bg-gray-100 text-gray-600';
+        }
+        
+        // 新增：展示图片
+        const detailContainer = document.querySelector('#detail-page .content-scroll > div');
+        const existingImg = detailContainer.querySelector('.detail-image');
+        if (existingImg) existingImg.remove();
+          
+        if (content.image) {
+            const imgContainer = document.createElement('div');
+            imgContainer.className = 'detail-image my-4';
+            imgContainer.innerHTML = `<img src="${content.image}" class="max-w-full h-auto rounded-lg shadow-sm" onerror="this.src='/images/placeholder.svg'; this.classList.add('opacity-50')" alt="内容图片">`;
+            detailContainer.insertBefore(imgContainer, document.getElementById('detail-content'));
+        }
+        
+        // 显示详情页
+        showPage('detail-page');
     }
 
+    // 上传图片到GitHub并返回图片URL
+    async function uploadImageToGitHub(file, token) {
+        try {
+            // 生成唯一文件名（避免重复）
+            const fileName = `${Date.now()}-${file.name.replace(/\s+/g, "-")}`;
+            const filePath = `${githubConfig.imageDir}${fileName}`;
+              
+            // 读取图片并转为base64
+            const base64Image = await new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result.split(",")[1]); // 移除base64前缀
+                reader.readAsDataURL(file);
+            });
+              
+            // 调用GitHub API创建图片文件
+            const response = await fetch(`https://api.github.com/repos/${githubConfig.username}/${githubConfig.repo}/contents/${filePath}`, {
+                method: "PUT",
+                headers: {
+                    Authorization: `token ${token}`,
+                    Accept: "application/vnd.github.v3+json"
+                },
+                body: JSON.stringify({
+                    message: `Upload image: ${fileName}`, // 提交信息
+                    content: base64Image, // base64编码的图片内容
+                    branch: githubConfig.branch
+                })
+            });
+              
+            if (!response.ok) {
+                const errorDetails = await response.text(); // 获取详细错误信息
+                if (response.status === 401) {
+                    throw new Error(`令牌无效或已过期: ${errorDetails}`);
+                } else if (response.status === 404) {
+                    throw new Error(`路径不存在: ${errorDetails}`);
+                } else {
+                    throw new Error(`图片上传失败 (${response.status}): ${errorDetails}`);
+                }
+            }
+              
+            // 返回图片的访问URL（基于GitHub Pages实际部署路径）
+            return `${githubConfig.baseUrl}${githubConfig.imageDir}${fileName}`;
+        } catch (error) {
+            console.error("图片上传失败：", error);
+            throw error;
+        }
+    }
+
+    // 读取GitHub仓库中已有的数据文件
+    async function fetchExistingData(token) {
+        try {
+            const response = await fetch(`https://api.github.com/repos/${githubConfig.username}/${githubConfig.repo}/contents/${githubConfig.dataFile}`, {
+                headers: {
+                    Authorization: `token ${token}`,
+                    Accept: "application/vnd.github.v3+json"
+                }
+            });
+
+            if (response.status === 404) {
+                // 文件不存在，返回空数组
+                return { data: [], sha: null };
+            }
+
+            if (!response.ok) {
+                const errorDetails = await response.text();
+                if (response.status === 401) {
+                    throw new Error(`令牌无效或已过期: ${errorDetails}`);
+                } else {
+                    throw new Error(`读取历史数据失败 (${response.status}): ${errorDetails}`);
+                }
+            }
+
+            const data = await response.json();
+            // GitHub返回的content是base64编码，需要解码
+            const decodedContent = atob(data.content);
+            return { data: JSON.parse(decodedContent), sha: data.sha };
+        } catch (error) {
+            console.error("读取历史数据出错：", error);
+            throw error;
+        }
+    }
+
+    // 页面加载时读取GitHub中的数据
+    async function loadDataFromGitHub() {
+        // 检查本地缓存（10分钟内有效）
+        const cacheTime = localStorage.getItem('cacheTime');
+        if (cacheTime && new Date().getTime() - parseInt(cacheTime) < 600000) {
+            contents = JSON.parse(localStorage.getItem('cachedContents') || '[]');
+            renderContentList();
+            return;
+        }
+
+        const token = getToken() || prompt("请输入GitHub令牌以加载内容：");
+        if (!token) return;
+    
+        saveToken(token); // 保存到sessionStorage
+
+        try {
+            const result = await fetchExistingData(token);
+            contents = result.data;
+            renderContentList(); // 渲染内容列表
+            
+            // 保存数据到本地缓存
+            localStorage.setItem('cachedContents', JSON.stringify(contents));
+            localStorage.setItem('cacheTime', new Date().getTime().toString());
+        } catch (error) {
+            console.error("加载数据失败：", error);
+            alert("加载数据失败：" + error.message);
+        }
+    }
+    
     // 保存内容
     async function saveContent() {
-      // 获取表单数据
-      const type = document.querySelector('input[name="content-type"]:checked').value;
-      const title = dom.forms.titleInput.value.trim();
-      const content = dom.forms.contentInput.value.trim();
-       
-      if (!content) {
-        alert('请输入正文内容');
-        return;
-      }
-       
-      const imageFile = dom.forms.imageUpload.files[0];
-      const newContent = {
-        id: Date.now(),
-        type,
-        title,
-        content,
-        timestamp: new Date().toISOString(),
-        image: null  
-      };
-
-      // 使用sessionStorage中的令牌或提示输入
-      const token = getToken() || prompt("请输入GitHub令牌以保存内容：");
-      if (!token) {
-        alert("未获取到令牌，无法保存内容");
-        return;
-      }
-  
-      saveToken(token); // 保存到sessionStorage
-
-      try {
-        // 处理图片（若上传失败则直接抛出错误）
-        if (imageFile) {
-          const imageUrl = await uploadImageToGitHub(imageFile, token, githubConfig);
-          if (!imageUrl) {
-            throw new Error("图片上传失败，请重试");
-          }
-          newContent.image = imageUrl;
+        // 获取表单数据
+        const type = document.querySelector('input[name="content-type"]:checked').value;
+        const title = document.getElementById('title-input').value.trim();
+        const content = document.getElementById('content-input').value.trim();
+         
+        if (!content) {
+            alert('请输入正文内容');
+            return;
         }
+         
+        const imageFile = imageUploadInput.files[0];
+        const newContent = {
+            id: Date.now(),
+            type,
+            title,
+            content,
+            timestamp: new Date().toISOString(),
+            image: null  
+        };
 
-        // 1. 读取仓库中已有的数据
-        const result = await fetchExistingData(token, githubConfig);
-        const existingData = result.data;
-        // 2. 合并新内容（新内容追加到数组）
-        const updatedData = [...existingData, newContent];
-        // 3. 将数据转为JSON并编码为base64（GitHub要求）
-        const jsonData = JSON.stringify(updatedData, null, 2);
-        const base64Data = btoa(unescape(encodeURIComponent(jsonData)));
-
-        // 4. 上传更新到GitHub仓库
-        const response = await fetch(`https://api.github.com/repos/${githubConfig.username}/${githubConfig.repo}/contents/${githubConfig.dataFile}`, {
-          method: "PUT",
-          headers: {
-            Authorization: `token ${token}`,
-            Accept: "application/vnd.github.v3+json"
-          },
-          body: JSON.stringify({
-            message: `Add new content: ${title || "无标题"}`, // 提交信息
-            content: base64Data, // base64编码的JSON数据
-            branch: githubConfig.branch,
-            // 如果文件已存在，需要提供当前文件的sha值
-            sha: result.sha
-          })
-        });
-
-        if (response.status === 409) {
-          // 409 表示冲突（文件已被其他操作修改）
-          if (confirm("数据已被更新，请重新加载后再尝试保存？")) {
-            await loadDataFromGitHub(); // 重新加载最新数据
-          }
-          return;
-        }
-
-        if (!response.ok) {
-          const errorDetails = await response.text();
-          if (response.status === 401) {
-            throw new Error(`令牌无效或已过期: ${errorDetails}`);
-          } else {
-            throw new Error(`内容保存到GitHub失败 (${response.status}): ${errorDetails}`);
-          }
-        }
-
-        // 保存成功后，更新本地contents数组
-        contents = updatedData;
-        resetForm();
-        alert("内容已成功保存到GitHub！");
-        showPage('home', dom);
-        
-        // 更新本地缓存
-        cache.setContents(contents);
-      } catch (error) {
-        handleError(error, "保存内容");
-      }
-    }
-
-    // 重置表单函数
-    function resetForm() {
-      dom.forms.titleInput.value = '';
-      dom.forms.contentInput.value = '';
-      dom.forms.imageUpload.value = '';
-      dom.forms.imagePreview.innerHTML = '';
-      dom.forms.imagePreview.classList.add('hidden');
-    }
-
-    // 删除内容 - 异步函数，同步删除远程数据
-    async function deleteContent() {
-      if (currentDetailIndex === -1) return;
-      const content = contents[currentDetailIndex];
-      
-      if (!confirm(`确定要删除"${content.title || '无标题'}"这条内容吗？`)) {
-        return;
-      }
-
-      try {
-        const token = getToken();
+        // 使用sessionStorage中的令牌或提示输入
+        const token = getToken() || prompt("请输入GitHub令牌以保存内容：");
         if (!token) {
-          throw new Error("未获取到令牌，请重新登录");
+            alert("未获取到令牌，无法保存内容");
+            return;
         }
+    
+        saveToken(token); // 保存到sessionStorage
 
-        // 1. 移除本地数据
-        const updatedContents = [...contents];
-        updatedContents.splice(currentDetailIndex, 1);
+        try {
+            // 处理图片（若上传失败则直接抛出错误）
+            if (imageFile) {
+                const imageUrl = await uploadImageToGitHub(imageFile, token);
+                if (!imageUrl) {
+                    throw new Error("图片上传失败，请重试");
+                }
+                newContent.image = imageUrl;
+            }
 
-        // 2. 获取当前 data.json 的 sha（用于更新远程）
-        const result = await fetchExistingData(token, githubConfig);
-        const sha = result.sha;
+            // 1. 读取仓库中已有的数据
+            const result = await fetchExistingData(token);
+            const existingData = result.data;
+            // 2. 合并新内容（新内容追加到数组）
+            const updatedData = [...existingData, newContent];
+            // 3. 将数据转为JSON并编码为base64（GitHub要求）
+            const jsonData = JSON.stringify(updatedData, null, 2);
+            const base64Data = btoa(unescape(encodeURIComponent(jsonData)));
 
-        // 3. 同步到远程仓库
-        const jsonData = JSON.stringify(updatedContents, null, 2);
-        const base64Data = btoa(unescape(encodeURIComponent(jsonData)));
+            // 4. 上传更新到GitHub仓库
+            const response = await fetch(`https://api.github.com/repos/${githubConfig.username}/${githubConfig.repo}/contents/${githubConfig.dataFile}`, {
+                method: "PUT",
+                headers: {
+                    Authorization: `token ${token}`,
+                    Accept: "application/vnd.github.v3+json"
+                },
+                body: JSON.stringify({
+                    message: `Add new content: ${title || "无标题"}`, // 提交信息
+                    content: base64Data, // base64编码的JSON数据
+                    branch: githubConfig.branch,
+                    // 如果文件已存在，需要提供当前文件的sha值
+                    sha: result.sha
+                })
+            });
 
-        const response = await fetch(`https://api.github.com/repos/${githubConfig.username}/${githubConfig.repo}/contents/${githubConfig.dataFile}`, {
-          method: "PUT",
-          headers: {
-            Authorization: `token ${token}`,
-            Accept: "application/vnd.github.v3+json"
-          },
-          body: JSON.stringify({
-            message: `Delete content: ${content.title || "无标题"}`,
-            content: base64Data,
-            branch: githubConfig.branch,
-            sha: sha // 必须提供当前文件的 sha 才能更新
-          })
-        });
+            if (response.status === 409) {
+                // 409 表示冲突（文件已被其他操作修改）
+                if (confirm("数据已被更新，请重新加载后再尝试保存？")) {
+                    await loadDataFromGitHub(); // 重新加载最新数据
+                }
+                return;
+            }
 
-        if (!response.ok) {
-          throw new Error(`删除失败: ${await response.text()}`);
+            if (!response.ok) {
+                const errorDetails = await response.text();
+                if (response.status === 401) {
+                    throw new Error(`令牌无效或已过期: ${errorDetails}`);
+                } else {
+                    throw new Error(`内容保存到GitHub失败 (${response.status}): ${errorDetails}`);
+                }
+            }
+
+            // 保存成功后，更新本地contents数组
+            contents = updatedData;
+            resetForm();
+            alert("内容已成功保存到GitHub！");
+            showPage('home-page');
+            
+            // 更新本地缓存
+            localStorage.setItem('cachedContents', JSON.stringify(contents));
+            localStorage.setItem('cacheTime', new Date().getTime().toString());
+        } catch (error) {
+            console.error("保存失败：", error);
+            alert("保存失败：" + error.message);
+            return; // 终止保存流程
         }
+    }
 
-        // 4. 更新本地数据并刷新列表
-        contents = updatedContents;
-        currentDetailIndex = -1;
-        showPage('view', dom);
-        alert("内容已成功删除");
+    // 新增重置表单函数
+    function resetForm() {
+        document.getElementById('title-input').value = '';
+        document.getElementById('content-input').value = '';
+        imageUploadInput.value = '';
+        document.getElementById('image-preview').innerHTML = '';
+        document.getElementById('image-preview').classList.add('hidden');
+        // 保留sessionStorage中的令牌，不在重置表单时清除
+    }
+
+    // 删除内容 - 修改为异步函数，同步删除远程数据
+    async function deleteContent() {
+        if (currentDetailIndex === -1) return;
+        const content = contents[currentDetailIndex];
         
-        // 更新本地缓存
-        cache.setContents(contents);
-      } catch (error) {
-        handleError(error, "删除内容");
-      }
+        if (!confirm(`确定要删除"${content.title || '无标题'}"这条内容吗？`)) {
+            return;
+        }
+
+        try {
+            const token = getToken();
+            if (!token) {
+                throw new Error("未获取到令牌，请重新登录");
+            }
+
+            // 1. 移除本地数据
+            const updatedContents = [...contents];
+            updatedContents.splice(currentDetailIndex, 1);
+
+            // 2. 获取当前 data.json 的 sha（用于更新远程）
+            const result = await fetchExistingData(token);
+            const sha = result.sha;
+
+            // 3. 同步到远程仓库
+            const jsonData = JSON.stringify(updatedContents, null, 2);
+            const base64Data = btoa(unescape(encodeURIComponent(jsonData)));
+
+            const response = await fetch(`https://api.github.com/repos/${githubConfig.username}/${githubConfig.repo}/contents/${githubConfig.dataFile}`, {
+                method: "PUT",
+                headers: {
+                    Authorization: `token ${token}`,
+                    Accept: "application/vnd.github.v3+json"
+                },
+                body: JSON.stringify({
+                    message: `Delete content: ${content.title || "无标题"}`,
+                    content: base64Data,
+                    branch: githubConfig.branch,
+                    sha: sha // 必须提供当前文件的 sha 才能更新
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`删除失败: ${await response.text()}`);
+            }
+
+            // 4. 更新本地数据并刷新列表
+            contents = updatedContents;
+            currentDetailIndex = -1;
+            showPage('view-page');
+            alert("内容已成功删除");
+            
+            // 更新本地缓存
+            localStorage.setItem('cachedContents', JSON.stringify(contents));
+            localStorage.setItem('cacheTime', new Date().getTime().toString());
+        } catch (error) {
+            console.error("删除失败：", error);
+            alert("删除失败：" + error.message);
+        }
+    }
+
+    // 格式化日期
+    function formatDate(isoString) {
+        const date = new Date(isoString);
+        return `${date.getMonth() + 1}月${date.getDate()}日 ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
     }
 
     // 事件监听
-    // 首页按钮
-    dom.buttons.toInput.addEventListener('click', () => showPage('input', dom));
-    dom.buttons.toView.addEventListener('click', () => showPage('view', dom));
-    
-    // 返回按钮
-    dom.buttons.backFromInput.addEventListener('click', () => showPage('home', dom));
-    dom.buttons.backFromView.addEventListener('click', () => showPage('home', dom));
-    dom.buttons.backFromDetail.addEventListener('click', () => showPage('view', dom));
-    
-    // 保存按钮
-    dom.buttons.saveContent.addEventListener('click', saveContent);
-    
-    // 删除按钮
-    dom.buttons.deleteContent.addEventListener('click', deleteContent);
-    
-    // 图片上传触发
-    dom.other.imageUploadBtn.addEventListener('click', () => {
-      dom.forms.imageUpload.click();
-    });
-    
-    dom.forms.imageUpload.addEventListener('change', (e) => {
-      if (e.target.files.length > 0) {
-        const file = e.target.files[0];
-        
-        if (file.type.startsWith('image/')) {
-          // 1. 预览图片
-          const reader = new FileReader();
-          reader.onload = function(e) {
-            const img = document.createElement('img');
-            img.src = e.target.result;
-            img.className = 'max-w-full h-48 object-contain rounded-md';
-            dom.forms.imagePreview.innerHTML = '';
-            dom.forms.imagePreview.appendChild(img);
-            dom.forms.imagePreview.classList.remove('hidden');
-          };
-          reader.readAsDataURL(file);
-          
-          // 2. 使用sessionStorage中的令牌或提示输入
-          const token = getToken() || prompt('请输入GitHub令牌：');
-          if (!token) {
-            alert('令牌为空，无法上传图片');
-            // 清空选择的图片，避免用户误以为能上传
-            dom.forms.imageUpload.value = '';
-            dom.forms.imagePreview.innerHTML = '';
-            dom.forms.imagePreview.classList.add('hidden');
-            return;
-          }
-          
-          saveToken(token); // 保存到sessionStorage
-        } else {
-          alert('请选择图片文件');
-        }
-      }
-    });
+    document.addEventListener('DOMContentLoaded', async () => {
+        // 页面加载时尝试加载GitHub数据
+        loadDataFromGitHub();
 
-    // 页面加载时尝试加载GitHub数据
-    loadDataFromApp();
-  });
+        // 首页按钮
+        document.getElementById('to-input-btn').addEventListener('click', () => showPage('input-page'));
+        document.getElementById('to-view-btn').addEventListener('click', () => showPage('view-page'));
+        
+        // 返回按钮
+        document.getElementById('back-from-input').addEventListener('click', () => showPage('home-page'));
+        document.getElementById('back-from-view').addEventListener('click', () => showPage('home-page'));
+        document.getElementById('back-from-detail').addEventListener('click', () => showPage('view-page'));
+        
+        // 保存按钮
+        document.getElementById('save-content').addEventListener('click', saveContent);
+        
+        // 删除按钮 - 注意：现在deleteContent是异步函数，但事件监听不需要改变
+        document.getElementById('delete-content').addEventListener('click', deleteContent);
+        
+        // 图片上传触发
+        imageUploadBtn.addEventListener('click', () => {
+            imageUploadInput.click();
+        });
+        
+        imageUploadInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                const file = e.target.files[0];
+                const previewContainer = document.getElementById('image-preview');
+                
+                if (file.type.startsWith('image/')) {
+                    // 1. 预览图片
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.className = 'max-w-full h-48 object-contain rounded-md';
+                        previewContainer.innerHTML = '';
+                        previewContainer.appendChild(img);
+                        previewContainer.classList.remove('hidden');
+                    };
+                    reader.readAsDataURL(file);
+                    
+                    // 2. 使用sessionStorage中的令牌或提示输入
+                    const token = getToken() || prompt('请输入GitHub令牌：');
+                    if (!token) {
+                        alert('令牌为空，无法上传图片');
+                        // 清空选择的图片，避免用户误以为能上传
+                        imageUploadInput.value = '';
+                        previewContainer.innerHTML = '';
+                        previewContainer.classList.add('hidden');
+                        return;
+                    }
+                    
+                    saveToken(token); // 保存到sessionStorage
+                } else {
+                    alert('请选择图片文件');
+                }
+            }
+        });
+    });
 </script>
