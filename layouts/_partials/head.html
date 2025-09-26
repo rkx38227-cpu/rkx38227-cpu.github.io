@@ -56,5 +56,39 @@
             max-height: calc(100vh - 60px);
             overflow-y: auto;
         }
+        
+        /* 新增复合类简化类名 */
+        .page-hidden {
+            @apply hidden opacity-0 transform translate-y-4;
+        }
+        .page-visible {
+            @apply opacity-100 transform translate-y-0;
+        }
+        
+        /* 新增动画类 */
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out forwards;
+        }
+        .slide-up {
+            animation: slideUp 0.3s ease-out forwards;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slideUp {
+            from {
+                transform: translateY(16px);
+            }
+            to {
+                transform: translateY(0);
+            }
+        }
     }
 </style>

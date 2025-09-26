@@ -1,0 +1,72 @@
+<!-- layouts/_partials/pages/input.html -->
+<div id="input-page" class="page-transition absolute inset-0 full-screen page-hidden">
+  <!-- 顶部导航 -->
+  <nav class="bg-white shadow-md p-4 flex items-center justify-between">
+    <button id="back-from-input" class="text-dark p-2">
+      <i class="fa fa-arrow-left text-xl"></i>
+    </button>
+    <h1 class="text-xl font-bold text-dark">投漂流瓶</h1>
+    <div class="w-8"></div> <!-- 占位元素，保持标题居中 -->
+  </nav>
+  
+  <!-- 内容滚动区域 -->
+  <div class="content-scroll">
+    <!-- 背景图位置 -->
+    <div class="bg-placeholder w-full h-[22vh] flex items-center justify-center mt-2" style="background-image: url('/images/输入.png'); background-size: cover; background-position: center;">
+    </div>
+    
+    <!-- 输入内容区域 -->
+    <div class="p-6 mt-4">
+      <!-- 类型选择 -->
+      <div class="mb-6">
+        <p class="text-dark font-medium mb-3">选择类型：</p>
+        <div class="flex gap-4">
+          <label class="flex-1">
+            <input type="radio" name="content-type" value="写给李佳凝" class="hidden peer" checked>
+            <div class="btn-hover h-12 rounded-lg border-2 border-gray-300 flex items-center justify-center peer-checked:border-primary peer-checked:bg-primary/10 font-medium">
+              写给李佳凝
+            </div>
+          </label>
+          <label class="flex-1">
+            <input type="radio" name="content-type" value="写给许若坤" class="hidden peer">
+            <div class="btn-hover h-12 rounded-lg border-2 border-gray-300 flex items-center justify-center peer-checked:border-accent peer-checked:bg-accent/10 font-medium">
+              写给许若坤
+            </div>
+          </label>
+        </div>
+      </div>
+      
+      <!-- 标题输入 -->
+      <div class="mb-5">
+        <label for="title-input" class="block text-dark font-medium mb-2">丝带标签</label>
+        <input type="text" id="title-input" placeholder="请输入标题（可选）" 
+               class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all">
+      </div>
+      
+      <!-- 正文输入 -->
+      <div class="mb-5">
+        <label for="content-input" class="block text-dark font-medium mb-2">纸短情长</label>
+        <textarea id="content-input" rows="5" placeholder="请输入正文内容" 
+                  class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all resize-none"></textarea>
+      </div>
+      
+      <!-- 图片上传区域 -->
+      <div class="mb-6">
+        <label class="block text-dark font-medium mb-2">有照片吗</label>
+        <div class="bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg p-5 text-center">
+             <i class="fa fa-cloud-upload text-3xl text-gray-400 mb-2"></i>
+             <p class="text-gray-500 mb-3">点击或拖拽图片到此处上传</p>
+             <button id="image-upload-btn" class="text-primary font-medium">选择图片</button>
+             <input type="file" accept="image/*" class="hidden" id="image-upload">
+          <!-- 图片预览容器 -->
+          <div id="image-preview" class="mt-4 hidden"></div>
+          </div>
+      </div>
+      
+      <!-- 保存按钮 -->
+      <button id="save-content" class="btn-hover w-full bg-primary text-white py-4 px-6 rounded-xl text-lg font-medium shadow-md flex items-center justify-center">
+        <i class="fa fa-save mr-2"></i> 塞上瓶塞，投入水中
+      </button>
+    </div>
+  </div>
+</div>

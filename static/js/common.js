@@ -12,8 +12,8 @@ export const githubConfig = {
   branch: "main", // 或 master
   dataFile: "data.json", // 存储内容数据的文件
   imageDir: "static/images/user-uploads/", // 图片存储目录
-  // 添加部署基础路径
-  baseUrl: "https://rkx38227-cpu.github.io/rkx38227-cpu.github.io/"
+  // 修正部署基础路径
+  baseUrl: "https://rkx38227-cpu.github.io/"
 };
 
 // 令牌管理函数
@@ -82,10 +82,21 @@ export const cache = {
   }
 };
 
+// 显示轻量提示组件
+export function showToast(message, type = 'error') {
+  const toast = document.createElement('div');
+  toast.className = `fixed bottom-4 left-1/2 transform -translate-x-1/2 px-4 py-2 rounded-lg ${
+    type === 'error' ? 'bg-red-500' : 'bg-green-500'
+  } text-white z-50`;
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
+
 // 错误处理函数
 export function handleError(error, operation) {
   console.error(`${operation}失败：`, error);
-  alert(`${operation}失败：${error.message}`);
+  showToast(`${operation}失败：${error.message}`);
 }
 
 // 格式化日期
@@ -96,15 +107,14 @@ export function formatDate(isoString) {
 
 // 页面切换函数
 export function showPage(pageId, dom) {
-  // 隐藏所有页面
   Object.values(dom.pages).forEach(page => {
-    page.classList.add('hidden', 'opacity-0', 'transform', 'translate-y-4');
+    page.classList.add('hidden', 'opacity-0', 'translate-y-4');
+    page.classList.remove('fade-in', 'slide-up');
   });
-  
-  // 显示目标页面
   const target = dom.pages[pageId];
   target.classList.remove('hidden');
-  setTimeout(() => {
+  setTimeout(() => { // 确保重排后应用动画
+    target.classList.add('fade-in', 'slide-up');
     target.classList.remove('opacity-0', 'translate-y-4');
   }, 10);
 }
@@ -188,4 +198,88 @@ export async function uploadImageToGitHub(file, token, config) {
     console.error("图片上传失败：", error);
     throw error;
   }
+}
+
+// 加载GitHub数据
+export async function loadDataFromGitHub(dom, cache, fetchExistingData, handleError, saveToken, getToken, githubConfig) {
+  // 检查本地缓存
+  const cached = cache.getContents();
+  if (cached) {
+    return cached;
+  }
+
+  const token = getToken() || prompt("请输入GitHub令牌以加载内容：");
+  if (!token) return [];
+  
+  saveToken(token); // 保存到sessionStorage
+
+  try {
+    const result = await fetchExistingData(token, githubConfig);
+    // 保存数据到本地缓存
+    cache.setContents(result.data);
+    return result.data;
+  } catch (error) {
+    handleError(error, "加载数据");
+    return [];
+  }
+}
+
+// 渲染内容列表
+export function renderContentList(contents, dom, formatDate, showDetail) {
+  // 清空现有列表（除了空状态）
+  while (dom.content.contentList.children.length > 1) {
+    dom.content.contentList.removeChild(dom.content.contentList.lastChild);
+  }
+  
+  // 检查是否有内容
+  if (contents.length === 0) {
+    dom.content.emptyState.classList.remove('hidden');
+    return;
+  }
+  
+  // 隐藏空状态
+  dom.content.emptyState.classList.add('hidden');
+  
+  // 倒序显示（最新的在前面）
+  const reversedContents = [...contents].reverse();
+  
+  // 添加列表项
+  reversedContents.forEach((content, index) => {
+    const originalIndex = contents.length - 1 - index;
+    const listItem = document.createElement('div');
+    
+    // 根据类型设置不同的样式
+    let typeClass, typeText;
+    if (content.type === '写给李佳凝') {
+      typeClass = 'border-l-4 border-primary';
+      typeText = '写给李佳凝';
+    } else if (content.type === '写给许若坤') {
+      typeClass = 'border-l-4 border-accent';
+      typeText = '写给许若坤';
+    } else {
+      typeClass = 'border-l-4 border-gray-300';
+      typeText = '其他类型';
+    }
+    
+    listItem.className = `bg-white rounded-r-lg shadow-sm p-4 ${typeClass} hover:shadow-md transition-shadow cursor-pointer`;
+    listItem.innerHTML = `
+      <div class="flex justify-between items-start">
+        <div>
+          <h3 class="font-medium text-dark ${!content.title ? 'text-gray-400' : ''}">
+            ${content.title || '无标题'}
+          </h3>
+          <p class="text-xs text-gray-500 mt-1">${typeText} · ${formatDate(content.timestamp)}</p>
+        </div>
+        <i class="fa fa-chevron-right text-gray-400"></i>
+      </div>
+      <p class="text-gray-600 text-sm mt-2 line-clamp-2">${content.content.substring(0, 50)}${content.content.length > 50 ? '...' : ''}</p>
+    `;
+    
+    // 点击查看详情
+    listItem.addEventListener('click', () => {
+      showDetail(originalIndex);
+    });
+    
+    dom.content.contentList.appendChild(listItem);
+  });
 }

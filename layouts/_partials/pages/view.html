@@ -1,0 +1,25 @@
+<!-- layouts/_partials/pages/view.html -->
+<div id="view-page" class="page-transition absolute inset-0 full-screen page-hidden">
+  <!-- 顶部导航 -->
+  <nav class="bg-white shadow-md p-4 flex items-center justify-between">
+    <button id="back-from-view" class="text-dark p-2">
+      <i class="fa fa-arrow-left text-xl"></i>
+    </button>
+    <h1 class="text-xl font-bold text-dark">跨越时空的问候</h1>
+    <div class="w-8"></div> <!-- 占位元素，保持标题居中 -->
+  </nav>
+  
+  <!-- 内容列表区域 -->
+  <div class="content-scroll">
+    <div id="content-list" class="p-4 space-y-3">
+      <!-- 空状态 -->
+      <div id="empty-state" class="hidden flex flex-col items-center justify-center p-8">
+        <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+          <i class="fa fa-folder-open-o text-3xl text-gray-400"></i>
+        </div>
+        <p class="text-gray-500">暂无内容</p>
+      </div>
+      <!-- 列表项会通过JavaScript动态添加 -->
+    </div>
+  </div>
+</div>
