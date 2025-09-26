@@ -426,7 +426,11 @@
             }
               
             
-            return `${githubConfig.baseUrl}${githubConfig.imageDir}${fileName}`;
+            
+            const baseUrlWithSlash = githubConfig.baseUrl.endsWith('/') ? githubConfig.baseUrl : githubConfig.baseUrl + '/';
+            
+            const imageDirWithoutLeadingSlash = githubConfig.imageDir.startsWith('/') ? githubConfig.imageDir.substring(1) : githubConfig.imageDir;
+            return `${baseUrlWithSlash}${imageDirWithoutLeadingSlash}${fileName}`;
         } catch (error) {
             console.error("图片上传失败：", error);
             throw error;
