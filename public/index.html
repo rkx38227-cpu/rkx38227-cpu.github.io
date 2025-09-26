@@ -227,30 +227,6 @@
   </div>
 
   
-  <div id="token-modal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
-    <div class="bg-white rounded-xl p-6 w-11/12 max-w-md shadow-2xl">
-      <h3 class="text-xl font-bold text-dark mb-4">请输入访问令牌</h3>
-      <p class="text-gray-500 text-sm mb-4">令牌仅在当前会话中生效，刷新页面后需重新输入</p>
-      
-      <div class="mb-5">
-        <label for="user-token" class="block text-dark font-medium mb-2">GitHub 访问令牌</label>
-        
-        <input type="password" id="user-token" placeholder="ghp_xxxx..." 
-               class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all">
-      </div>
-      
-      <div class="flex gap-3">
-        <button id="cancel-token" class="flex-1 py-3 px-4 border border-gray-300 rounded-lg font-medium hover:bg-gray-50 transition-colors">
-          取消
-        </button>
-        <button id="confirm-token" class="flex-1 py-3 px-4 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-colors">
-          确认
-        </button>
-      </div>
-    </div>
-  </div>
-
-  
   <script>
     
     const githubConfig = {
@@ -260,9 +236,6 @@
       dataFile: "data.json", 
       imageDir: "static/images/user-uploads/" 
     };
-
-    
-    let userToken = null; 
 
     let contents = []; 
     let currentDetailIndex = -1;
@@ -300,12 +273,6 @@
     
     
     function renderContentList() {
-        
-        if (!userToken) {
-            openTokenModal();
-            return;
-        }
-        
         
         while (contentList.children.length > 1) {
             contentList.removeChild(contentList.lastChild);
@@ -403,13 +370,7 @@
     }
 
     
-    async function uploadImageToGitHub(file) {
-        
-        if (!userToken) {
-            openTokenModal();
-            return null;
-        }
-        
+    async function uploadImageToGitHub(file, token) {
         try {
             
             const fileName = `${Date.now()}-${file.name.replace(/\s+/g, "-")}`;
@@ -426,7 +387,7 @@
             const response = await fetch(`https://api.github.com/repos/${githubConfig.username}/${githubConfig.repo}/contents/${filePath}`, {
                 method: "PUT",
                 headers: {
-                    Authorization: `token ${userToken}`,
+                    Authorization: `token ${token}`,
                     Accept: "application/vnd.github.v3+json"
                 },
                 body: JSON.stringify({
@@ -447,21 +408,12 @@
             return `/${githubConfig.imageDir}${fileName}`;
         } catch (error) {
             console.error("图片上传失败：", error);
-            alert(`图片上传失败：${error.message}，请重新输入令牌`);
-            userToken = null;
-            openTokenModal();
-            return null;
+            throw error;
         }
     }
     
     
     async function saveContent() {
-        
-        if (!userToken) {
-            openTokenModal();
-            return;
-        }
-        
         
         const type = document.querySelector('input[name="content-type"]:checked').value;
         const title = document.getElementById('title-input').value.trim();
@@ -472,88 +424,50 @@
             return;
         }
          
-        
         const imageFile = imageUploadInput.files[0];
-        let imageUrl = null;
-        if (imageFile) {
-            
-            if (imageFile.size > 5 * 1024 * 1024) {
-                alert("图片大小不能超过5MB");
-                return;
-            }
-            imageUrl = await uploadImageToGitHub(imageFile);
-            if (!imageUrl) return; 
-        }
-         
-        
         const newContent = {
             id: Date.now(),
             type,
             title,
             content,
             timestamp: new Date().toISOString(),
-            image: imageUrl
+            image: imageFile ? imageFile.name : null  
         };
          
-        
-        contents.push(newContent);
-         
-        
-        await saveContentsToGitHub();
-         
-        
-        resetForm();
-        alert('内容已同步到所有设备！');
-        showPage('home-page');
-    }
-    
-    
-    async function saveContentsToGitHub() {
-        
-        if (!userToken) {
-            openTokenModal();
-            return;
-        }
-        
-        try {
+        if (imageFile) {
             
-            let sha = null;
-            const fetchUrl = `https://api.github.com/repos/${githubConfig.username}/${githubConfig.repo}/contents/${githubConfig.dataFile}?ref=${githubConfig.branch}`;
-            const fetchResponse = await fetch(fetchUrl, {
-                headers: { Authorization: `token ${userToken}` }
-            });
-              
-            if (fetchResponse.ok) {
-                const existingData = await fetchResponse.json();
-                sha = existingData.sha; 
+            const token = window.tempUploadToken;
+            if (!token) {
+                alert('未获取到上传令牌，请重新选择图片并输入令牌');
+                return;
             }
-              
+             
+            try {
+                
+                const imageUrl = await uploadImageToGitHub(imageFile, token);
+                
+                
+                newContent.image = imageUrl;
+                
+                
+                contents.push(newContent);
+                
+                
+                resetForm();
+                alert('内容和图片保存成功！');
+                showPage('home-page');
+            } catch (error) {
+                alert('图片上传失败：' + error.message);
+            } finally {
+                
+                delete window.tempUploadToken;
+            }
+        } else {
             
-            const response = await fetch(fetchUrl, {
-                method: "PUT",
-                headers: {
-                    Authorization: `token ${userToken}`,
-                    Accept: "application/vnd.github.v3+json"
-                },
-                body: JSON.stringify({
-                    message: `Add new content: ${new Date().toISOString()}`,
-                    content: btoa(JSON.stringify(contents, null, 2)), 
-                    branch: githubConfig.branch,
-                    sha 
-                })
-            });
-              
-            if (!response.ok) {
-                if (response.status === 401) {
-                    throw new Error("令牌无效或已过期");
-                }
-                throw new Error("数据同步失败");
-            }
-        } catch (error) {
-            console.error("保存数据失败：", error);
-            alert(`内容保存失败：${error.message}，请重新输入令牌`);
-            userToken = null;
-            openTokenModal();
+            contents.push(newContent);
+            resetForm();
+            alert('内容保存成功！');
+            showPage('home-page');
         }
     }
 
@@ -564,6 +478,8 @@ function resetForm() {
     imageUploadInput.value = '';
     document.getElementById('image-preview').innerHTML = '';
     document.getElementById('image-preview').classList.add('hidden');
+    
+    delete window.tempUploadToken;
 }
 
     
@@ -573,8 +489,6 @@ function resetForm() {
         if (confirm('确定要删除这条内容吗？')) {
             
             contents.splice(currentDetailIndex, 1);
-            
-            saveContentsToGitHub();
             
             showPage('view-page');
             currentDetailIndex = -1;
@@ -588,101 +502,10 @@ function resetForm() {
     }
 
     
-    async function loadContentsFromGitHub() {
-      
-      if (!userToken) {
-        openTokenModal();
-        return;
-      }
-      
-      try {
-        const url = `https://api.github.com/repos/${githubConfig.username}/${githubConfig.repo}/contents/${githubConfig.dataFile}?ref=${githubConfig.branch}`;
-         
-        const response = await fetch(url, {
-          headers: {
-            Authorization: `token ${userToken}`,
-            Accept: "application/vnd.github.v3+json"
-          }
-        });
-         
-        if (response.status === 404) {
-          
-          contents = [];
-          return;
-        }
-        
-        if (!response.ok) {
-          if (response.status === 401) {
-            throw new Error("令牌无效或已过期");
-          }
-          throw new Error("数据加载失败");
-        }
-         
-        const data = await response.json();
-        
-        const decodedContent = atob(data.content);
-        contents = JSON.parse(decodedContent);
-      } catch (error) {
-        console.error("加载数据失败：", error);
-        alert(`同步数据失败：${error.message}，请检查网络或令牌`);
-        userToken = null;
-        openTokenModal();
-        contents = [];
-      }
-    }
-    
-    
     document.addEventListener('DOMContentLoaded', async () => {
         
-        const tokenModal = document.getElementById('token-modal');
-        const userTokenInput = document.getElementById('user-token');
-        const confirmTokenBtn = document.getElementById('confirm-token');
-        const cancelTokenBtn = document.getElementById('cancel-token');
-        
-        
-        window.openTokenModal = function() {
-          tokenModal.classList.remove('hidden');
-          userTokenInput.focus();
-        };
-        
-        
-        window.closeTokenModal = function() {
-          tokenModal.classList.add('hidden');
-          userTokenInput.value = ''; 
-        };
-        
-        
-        confirmTokenBtn.addEventListener('click', () => {
-          const token = userTokenInput.value.trim();
-          if (!token) {
-            alert('请输入令牌');
-            return;
-          }
-          userToken = token; 
-          closeTokenModal();
-          alert('令牌已生效（当前会话）');
-          
-          loadContentsFromGitHub();
-        });
-        
-        cancelTokenBtn.addEventListener('click', closeTokenModal);
-        
-        
-        tokenModal.addEventListener('click', (e) => {
-          if (e.target === tokenModal) closeTokenModal();
-        });
-        
-        
         document.getElementById('to-input-btn').addEventListener('click', () => showPage('input-page'));
-        document.getElementById('to-view-btn').addEventListener('click', async () => {
-            
-            if (!userToken) {
-                openTokenModal();
-                return;
-            }
-            await loadContentsFromGitHub();
-            showPage('view-page');
-        });
+        document.getElementById('to-view-btn').addEventListener('click', () => showPage('view-page'));
         
         
         document.getElementById('back-from-input').addEventListener('click', () => showPage('home-page'));
@@ -705,24 +528,32 @@ function resetForm() {
                 const file = e.target.files[0];
                 const previewContainer = document.getElementById('image-preview');
                 
-                
                 if (file.type.startsWith('image/')) {
-                    const reader = new FileReader();
                     
+                    const reader = new FileReader();
                     reader.onload = function(e) {
-                        
                         const img = document.createElement('img');
                         img.src = e.target.result;
                         img.className = 'max-w-full h-48 object-contain rounded-md';
-                        
-                        
                         previewContainer.innerHTML = '';
                         previewContainer.appendChild(img);
                         previewContainer.classList.remove('hidden');
+                    };
+                    reader.readAsDataURL(file);
+                    
+                    
+                    const token = prompt('请输入图片上传令牌：');
+                    if (!token) {
+                        alert('令牌为空，无法上传图片');
+                        
+                        imageUploadInput.value = '';
+                        previewContainer.innerHTML = '';
+                        previewContainer.classList.add('hidden');
+                        return;
                     }
                     
                     
-                    reader.readAsDataURL(file);
+                    window.tempUploadToken = token; 
                 } else {
                     alert('请选择图片文件');
                 }
