@@ -28,6 +28,8 @@
 4. **推送到 GitHub 的 `main` 分支**：
    ```bash
    git push origin main
+
+   git push --force origin main
    ```
 
 
