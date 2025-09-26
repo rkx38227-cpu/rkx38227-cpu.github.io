@@ -60,6 +60,40 @@
             max-height: calc(100vh - 60px);
             overflow-y: auto;
         }
+        
+         
+        .page-hidden {
+            @apply hidden opacity-0 transform translate-y-4;
+        }
+        .page-visible {
+            @apply opacity-100 transform translate-y-0;
+        }
+        
+         
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out forwards;
+        }
+        .slide-up {
+            animation: slideUp 0.3s ease-out forwards;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slideUp {
+            from {
+                transform: translateY(16px);
+            }
+            to {
+                transform: translateY(0);
+            }
+        }
     }
 </style>
 </head>
@@ -90,139 +124,126 @@
     </div>
     
     
-    <div id="input-page" class="page-transition absolute inset-0 full-screen hidden opacity-0 transform translate-y-4">
-        
-        <nav class="bg-white shadow-md p-4 flex items-center justify-between">
-            <button id="back-from-input" class="text-dark p-2">
-                <i class="fa fa-arrow-left text-xl"></i>
-            </button>
-            <h1 class="text-xl font-bold text-dark">投漂流瓶</h1>
-            <div class="w-8"></div> 
-        </nav>
-        
-        
-        <div class="content-scroll">
-            
-            
-            <div class="bg-placeholder w-full h-[22vh] flex items-center justify-center mt-2" style="background-image: url('/images/输入.png'); background-size: cover; background-position: center;">
-                
-                
-            </div>
-            
-            
-            <div class="p-6 mt-4">
-                
-                <div class="mb-6">
-                    <p class="text-dark font-medium mb-3">选择类型：</p>
-                    <div class="flex gap-4">
-                        <label class="flex-1">
-                            <input type="radio" name="content-type" value="写给李佳凝" class="hidden peer" checked>
-                            <div class="btn-hover h-12 rounded-lg border-2 border-gray-300 flex items-center justify-center peer-checked:border-primary peer-checked:bg-primary/10 font-medium">
-                                写给李佳凝
-                            </div>
-                        </label>
-                        <label class="flex-1">
-                            <input type="radio" name="content-type" value="写给许若坤" class="hidden peer">
-                            <div class="btn-hover h-12 rounded-lg border-2 border-gray-300 flex items-center justify-center peer-checked:border-accent peer-checked:bg-accent/10 font-medium">
-                                写给许若坤
-                            </div>
-                        </label>
-                    </div>
-                </div>
-                
-                
-                <div class="mb-5">
-                    <label for="title-input" class="block text-dark font-medium mb-2">丝带标签</label>
-                    <input type="text" id="title-input" placeholder="请输入标题（可选）" 
-                           class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all">
-                </div>
-                
-                
-                <div class="mb-5">
-                    <label for="content-input" class="block text-dark font-medium mb-2">纸短情长</label>
-                    <textarea id="content-input" rows="5" placeholder="请输入正文内容" 
-                              class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all resize-none"></textarea>
-                </div>
-           
-                
-                
-                
-        
-                
-                <div class="mb-6">
-                    <label class="block text-dark font-medium mb-2">有照片吗</label>
-                    <div class="bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg p-5 text-center">
-                         <i class="fa fa-cloud-upload text-3xl text-gray-400 mb-2"></i>
-                         <p class="text-gray-500 mb-3">点击或拖拽图片到此处上传</p>
-                         <button class="text-primary font-medium">选择图片</button>
-                         <input type="file" accept="image/*" class="hidden" id="image-upload">
-                     
-                     <div id="image-preview" class="mt-4 hidden"></div>
-                     </div>
-                </div>
-                
-                
-                <button id="save-content" class="btn-hover w-full bg-primary text-white py-4 px-6 rounded-xl text-lg font-medium shadow-md flex items-center justify-center">
-                    <i class="fa fa-save mr-2"></i> 塞上瓶塞，投入水中
-                </button>
-            </div>
-        </div>
+    
+<div id="input-page" class="page-transition absolute inset-0 full-screen page-hidden">
+  
+  <nav class="bg-white shadow-md p-4 flex items-center justify-between">
+    <button id="back-from-input" class="text-dark p-2">
+      <i class="fa fa-arrow-left text-xl"></i>
+    </button>
+    <h1 class="text-xl font-bold text-dark">投漂流瓶</h1>
+    <div class="w-8"></div> 
+  </nav>
+  
+  
+  <div class="content-scroll">
+    
+    <div class="bg-placeholder w-full h-[22vh] flex items-center justify-center mt-2" style="background-image: url('/images/输入.png'); background-size: cover; background-position: center;">
     </div>
     
     
-    <div id="view-page" class="page-transition absolute inset-0 full-screen hidden opacity-0 transform translate-y-4">
-        
-        <nav class="bg-white shadow-md p-4 flex items-center justify-between">
-            <button id="back-from-view" class="text-dark p-2">
-                <i class="fa fa-arrow-left text-xl"></i>
-            </button>
-            <h1 class="text-xl font-bold text-dark">跨越时空的问候</h1>
-            <div class="w-8"></div> 
-        </nav>
-        
-        
-        <div class="content-scroll">
-            <div id="content-list" class="p-4 space-y-3">
-                
-                <div id="empty-state" class="hidden flex flex-col items-center justify-center p-8">
-                    <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                        <i class="fa fa-folder-open-o text-3xl text-gray-400"></i>
-                    </div>
-                    <p class="text-gray-500">暂无内容</p>
-                </div>
-                
+    <div class="p-6 mt-4">
+      
+      <div class="mb-6">
+        <p class="text-dark font-medium mb-3">选择类型：</p>
+        <div class="flex gap-4">
+          <label class="flex-1">
+            <input type="radio" name="content-type" value="写给李佳凝" class="hidden peer" checked>
+            <div class="btn-hover h-12 rounded-lg border-2 border-gray-300 flex items-center justify-center peer-checked:border-primary peer-checked:bg-primary/10 font-medium">
+              写给李佳凝
             </div>
+          </label>
+          <label class="flex-1">
+            <input type="radio" name="content-type" value="写给许若坤" class="hidden peer">
+            <div class="btn-hover h-12 rounded-lg border-2 border-gray-300 flex items-center justify-center peer-checked:border-accent peer-checked:bg-accent/10 font-medium">
+              写给许若坤
+            </div>
+          </label>
         </div>
+      </div>
+      
+      
+      <div class="mb-5">
+        <label for="title-input" class="block text-dark font-medium mb-2">丝带标签</label>
+        <input type="text" id="title-input" placeholder="请输入标题（可选）" 
+               class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all">
+      </div>
+      
+      
+      <div class="mb-5">
+        <label for="content-input" class="block text-dark font-medium mb-2">纸短情长</label>
+        <textarea id="content-input" rows="5" placeholder="请输入正文内容" 
+                  class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all resize-none"></textarea>
+      </div>
+      
+      
+      <div class="mb-6">
+        <label class="block text-dark font-medium mb-2">有照片吗</label>
+        <div class="bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg p-5 text-center">
+             <i class="fa fa-cloud-upload text-3xl text-gray-400 mb-2"></i>
+             <p class="text-gray-500 mb-3">点击或拖拽图片到此处上传</p>
+             <button id="image-upload-btn" class="text-primary font-medium">选择图片</button>
+             <input type="file" accept="image/*" class="hidden" id="image-upload">
+          
+          <div id="image-preview" class="mt-4 hidden"></div>
+          </div>
+      </div>
+      
+      
+      <button id="save-content" class="btn-hover w-full bg-primary text-white py-4 px-6 rounded-xl text-lg font-medium shadow-md flex items-center justify-center">
+        <i class="fa fa-save mr-2"></i> 塞上瓶塞，投入水中
+      </button>
     </div>
+  </div>
+</div>
     
     
-    <div id="detail-page" class="page-transition absolute inset-0 full-screen hidden opacity-0 transform translate-y-4">
-        
-        <nav class="bg-white shadow-md p-4 flex items-center justify-between">
-            <button id="back-from-detail" class="text-dark p-2">
-                <i class="fa fa-arrow-left text-xl"></i>
-            </button>
-            <h1 class="text-xl font-bold text-dark">内容详情</h1>
-            <button id="delete-content" class="text-red-500 p-2">
-                <i class="fa fa-trash text-xl"></i>
-            </button>
-        </nav>
-        
-        
-        <div class="content-scroll">
-            
-            <div class="p-6">
-                
-                <span id="detail-type-badge" class="inline-block px-3 py-1 rounded-full text-sm font-medium mb-4 bg-primary/10 text-primary">写给李佳凝</span>
-                
-                
-                <h2 id="detail-title" class="text-2xl font-bold text-dark mb-4">无标题</h2>
-                
-                
-                <p id="detail-content" class="text-gray-700 leading-relaxed">暂无内容</p>
-            </div>
+    
+<div id="view-page" class="page-transition absolute inset-0 full-screen page-hidden">
+  
+  <nav class="bg-white shadow-md p-4 flex items-center justify-between">
+    <button id="back-from-view" class="text-dark p-2">
+      <i class="fa fa-arrow-left text-xl"></i>
+    </button>
+    <h1 class="text-xl font-bold text-dark">跨越时空的问候</h1>
+    <div class="w-8"></div> 
+  </nav>
+  
+  
+  <div class="content-scroll">
+    <div id="content-list" class="p-4 space-y-3">
+      
+      <div id="empty-state" class="hidden flex flex-col items-center justify-center p-8">
+        <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+          <i class="fa fa-folder-open-o text-3xl text-gray-400"></i>
         </div>
+        <p class="text-gray-500">暂无内容</p>
+      </div>
+      
     </div>
+  </div>
+</div>
+    
+    
+    
+<div id="detail-page" class="page-transition absolute inset-0 full-screen page-hidden">
+  <nav class="bg-white shadow-md p-4 flex items-center justify-between">
+    <button id="back-from-detail" class="text-dark p-2">
+      <i class="fa fa-arrow-left text-xl"></i>
+    </button>
+    <h1 class="text-xl font-bold text-dark">内容详情</h1>
+    <button id="delete-content" class="text-red-500 p-2">
+      <i class="fa fa-trash text-xl"></i>
+    </button>
+  </nav>
+  <div class="content-scroll">
+    <div class="p-6">
+      <span id="detail-type-badge" class="inline-block px-3 py-1 rounded-full text-sm font-medium mb-4 bg-primary/10 text-primary"></span>
+      <h2 id="detail-title" class="text-2xl font-bold text-dark mb-4"></h2>
+      <p id="detail-content" class="text-gray-700 leading-relaxed"></p>
+    </div>
+  </div>
+</div>
 
   </div>
 
@@ -242,7 +263,9 @@
       formatDate, 
       showPage, 
       fetchExistingData, 
-      uploadImageToGitHub 
+      uploadImageToGitHub,
+      renderContentList,
+      loadDataFromGitHub
     } = window.common || await import('/js/common.js');
 
     let contents = []; 
@@ -250,90 +273,22 @@
     const dom = getDomElements(); 
 
     
-    async function loadDataFromGitHub() {
-      
-      const cached = cache.getContents();
-      if (cached) {
-        contents = cached;
-        renderContentList();
-        return;
-      }
-
-      const token = getToken() || prompt("请输入GitHub令牌以加载内容：");
-      if (!token) return;
-  
-      saveToken(token); 
-
+    async function loadDataFromApp() {
       try {
-        const result = await fetchExistingData(token, githubConfig);
-        contents = result.data;
-        renderContentList(); 
-        
-        
-        cache.setContents(contents);
+        const data = await loadDataFromGitHub(
+          dom, 
+          cache, 
+          fetchExistingData, 
+          handleError, 
+          saveToken, 
+          getToken, 
+          githubConfig
+        );
+        contents = data;
+        renderContentList(contents, dom, formatDate, showDetail);
       } catch (error) {
         handleError(error, "加载数据");
       }
-    }
-
-    
-    function renderContentList() {
-      
-      while (dom.content.contentList.children.length > 1) {
-        dom.content.contentList.removeChild(dom.content.contentList.lastChild);
-      }
-      
-      
-      if (contents.length === 0) {
-        dom.content.emptyState.classList.remove('hidden');
-        return;
-      }
-      
-      
-      dom.content.emptyState.classList.add('hidden');
-      
-      
-      const reversedContents = [...contents].reverse();
-      
-      
-      reversedContents.forEach((content, index) => {
-        const originalIndex = contents.length - 1 - index;
-        const listItem = document.createElement('div');
-        
-        
-        let typeClass, typeText;
-        if (content.type === '写给李佳凝') {
-          typeClass = 'border-l-4 border-primary';
-          typeText = '写给李佳凝';
-        } else if (content.type === '写给许若坤') {
-          typeClass = 'border-l-4 border-accent';
-          typeText = '写给许若坤';
-        } else {
-          typeClass = 'border-l-4 border-gray-300';
-          typeText = '其他类型';
-        }
-        
-        listItem.className = `bg-white rounded-r-lg shadow-sm p-4 ${typeClass} hover:shadow-md transition-shadow cursor-pointer`;
-        listItem.innerHTML = `
-          <div class="flex justify-between items-start">
-            <div>
-              <h3 class="font-medium text-dark ${!content.title ? 'text-gray-400' : ''}">
-                ${content.title || '无标题'}
-              </h3>
-              <p class="text-xs text-gray-500 mt-1">${typeText} · ${formatDate(content.timestamp)}</p>
-            </div>
-            <i class="fa fa-chevron-right text-gray-400"></i>
-          </div>
-          <p class="text-gray-600 text-sm mt-2 line-clamp-2">${content.content.substring(0, 50)}${content.content.length > 50 ? '...' : ''}</p>
-        `;
-        
-        
-        listItem.addEventListener('click', () => {
-          showDetail(originalIndex);
-        });
-        
-        dom.content.contentList.appendChild(listItem);
-      });
     }
 
     
@@ -593,7 +548,7 @@
     });
 
     
-    loadDataFromGitHub();
+    loadDataFromApp();
   });
 </script>
 </body>
