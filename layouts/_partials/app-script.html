@@ -197,7 +197,11 @@
             }
               
             // 返回图片的访问URL（基于GitHub Pages实际部署路径）
-            return `${githubConfig.baseUrl}${githubConfig.imageDir}${fileName}`;
+            // 确保baseUrl末尾有斜杠，避免重复域名
+            const baseUrlWithSlash = githubConfig.baseUrl.endsWith('/') ? githubConfig.baseUrl : githubConfig.baseUrl + '/';
+            // 确保imageDir不以斜杠开头，避免重复斜杠
+            const imageDirWithoutLeadingSlash = githubConfig.imageDir.startsWith('/') ? githubConfig.imageDir.substring(1) : githubConfig.imageDir;
+            return `${baseUrlWithSlash}${imageDirWithoutLeadingSlash}${fileName}`;
         } catch (error) {
             console.error("图片上传失败：", error);
             throw error;
