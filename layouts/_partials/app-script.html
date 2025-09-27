@@ -126,7 +126,10 @@
         
         // 设置详情内容
         document.getElementById('detail-title').textContent = content.title || '无标题';
-        document.getElementById('detail-content').textContent = content.content;
+        // 替换换行符为<br>，并保留空格缩进
+        document.getElementById('detail-content').innerHTML = content.content
+          .replace(/\n/g, '<br>')
+          .replace(/  /g, '&nbsp;&nbsp;'); // 可选：保留连续空格的显示
         
         // 设置类型徽章
         const typeBadge = document.getElementById('detail-type-badge');
